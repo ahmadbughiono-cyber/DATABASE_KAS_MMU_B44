@@ -1,0 +1,1870 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>KAS MMU B44 - Pendapatan & Belanja Madrasah</title>
+  
+  <!-- Load Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Font Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    
+    .dashboard-container {
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .dashboard-hidden {
+      opacity: 0;
+      transform: translateY(20px) scale(0.98);
+      pointer-events: none;
+    }
+    .dashboard-visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+    
+    @keyframes float-logo {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    .animate-float {
+      animation: float-logo 3s ease-in-out infinite;
+    }
+
+    @media (max-width: 640px) {
+      .responsive-modal-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        border-bottom-left-radius: 0px !important;
+        border-bottom-right-radius: 0px !important;
+        border-top-left-radius: 24px !important;
+        border-top-right-radius: 24px !important;
+        transform: translateY(100%);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .modal-active .responsive-modal-content {
+        transform: translateY(0);
+      }
+    }
+
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        font-size: 11pt;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-only {
+        display: block !important;
+      }
+      .print-card {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+      }
+      th, td {
+        border: 1px solid #475569 !important;
+        padding: 6px 8px !important;
+        font-size: 10pt !important;
+        color: #000000 !important;
+      }
+      th {
+        background-color: #e2e8f0 !important;
+        color: #000000 !important;
+      }
+    }
+    .print-only {
+      display: none;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-gray-800 flex flex-col pb-16 md:pb-0">
+
+  <!-- SCREEN 1: LOGIN BOX (Visible by default) -->
+  <div id="login-screen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-4 transition-all duration-500 ease-in-out">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8 relative overflow-hidden border border-gray-100 transform transition-all duration-500 scale-100">
+      
+      <div class="absolute -top-10 -left-10 w-44 h-44 bg-emerald-500/10 rounded-full blur-3xl"></div>
+      <div class="absolute -bottom-10 -right-10 w-44 h-44 bg-emerald-600/10 rounded-full blur-3xl"></div>
+
+      <div class="relative z-10 text-center mb-6">
+        <div class="inline-block p-3 bg-emerald-50 rounded-full mb-3 animate-float">
+          <img id="login-logo-preview" src="https://placehold.co/150x150/0ea755/ffffff?text=MMU+B44" alt="Logo MMU B44" class="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover shadow-md border border-emerald-400">
+        </div>
+        <h2 class="text-xl sm:text-2xl font-extrabold text-slate-800 tracking-tight">KAS MMU B44</h2>
+        <p class="text-[10px] sm:text-xs text-gray-500 mt-1 font-bold uppercase tracking-wider">Akses Masuk Bendahara</p>
+      </div>
+
+      <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4 relative z-10">
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Username</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400">
+              <i class="fa-solid fa-user"></i>
+            </span>
+            <input type="text" id="login-username" required placeholder="Masukkan username" class="w-full bg-gray-50 border border-gray-200 text-base sm:text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 block pl-10 p-3 shadow-sm font-semibold transition-all">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Password</label>
+          <div class="relative flex items-center">
+            <span class="absolute left-3.5 text-gray-400 z-10 pointer-events-none">
+              <i class="fa-solid fa-lock"></i>
+            </span>
+            <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-gray-50 border border-gray-200 text-base sm:text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 block pl-10 pr-10 p-3 shadow-sm font-semibold transition-all relative z-0">
+            <button type="button" onclick="togglePasswordVisibility('login-password', this)" class="absolute right-3 flex items-center text-gray-400 hover:text-emerald-600 transition-colors z-20 p-2 focus:outline-none min-w-[40px] min-h-[40px] justify-center">
+              <i class="fa-solid fa-eye text-sm"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="btn-login" class="w-full py-3.5 px-4 bg-[#00a65a] hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2">
+          <span>Masuk Aplikasi</span>
+          <i class="fa-solid fa-right-to-bracket"></i>
+        </button>
+      </form>
+
+      <div class="text-center mt-6 text-[10px] text-gray-400 font-semibold uppercase tracking-wider relative z-10">
+        &copy; 2026 Madrasah Miftahul Ulum B44
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: MAIN DASHBOARD (Hidden by default) -->
+  <div id="app-dashboard" class="dashboard-container dashboard-hidden hidden min-h-screen flex flex-col">
+    
+    <!-- Header Bar -->
+    <header class="bg-[#00a65a] text-white shadow-md no-print px-4 py-3 flex justify-between items-center z-30 sticky top-0">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="text-white hover:text-emerald-100 transition-colors focus:outline-none p-2 rounded-lg hover:bg-emerald-700 min-w-[40px] min-h-[40px] flex items-center justify-center">
+          <i class="fa-solid fa-bars text-lg"></i>
+        </button>
+        <div class="flex items-center gap-2">
+          <img id="header-logo" src="https://placehold.co/150x150/0ea755/ffffff?text=MMU+B44" alt="Logo Madrasah" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-white object-cover bg-white shadow-inner">
+          <h1 id="header-app-title" class="font-bold text-base sm:text-lg tracking-wide">KAS MMU B44</h1>
+        </div>
+      </div>
+
+      <!-- Widget Header Sisi Kanan: Tanggal Hijriah + Pasaran Jawa + Kwartal -->
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="hidden lg:flex flex-col text-right leading-tight">
+          <span id="widget-hijri-date" class="bg-amber-500 text-slate-900 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full inline-block">Memuat Tanggal...</span>
+          <span id="widget-javanese-day" class="text-emerald-100 text-[10px] font-bold uppercase mt-0.5">...</span>
+        </div>
+        
+        <div class="hidden md:flex items-center bg-red-600 px-3 py-1 rounded-full text-white font-extrabold text-[10px] tracking-wide uppercase gap-1 shadow-sm">
+          <span class="opacity-80">Kwartal</span>
+          <span id="widget-kwartal-info">...</span>
+        </div>
+
+        <div class="flex items-center gap-2 hover:bg-emerald-700 p-1 rounded-lg transition-all cursor-pointer" onclick="openSettingsModal()">
+          <img id="operator-avatar" src="https://placehold.co/80x80/cccccc/333333?text=User" alt="Avatar" class="w-8 h-8 rounded-full border border-white/60 object-cover bg-white">
+          <div class="text-left hidden md:block leading-none">
+            <p id="operator-name-display" class="font-semibold text-xs text-white">...</p>
+            <span class="text-[9px] text-emerald-200">Bendahara</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Bar Notifikasi Status Koneksi Server -->
+    <section class="bg-emerald-800 py-2 px-4 border-b border-emerald-900 no-print flex lg:hidden flex-wrap gap-2 justify-between items-center text-xs text-white">
+      <div id="mobile-hijri-widget" class="font-bold">...</div>
+      <div id="mobile-kwartal-widget" class="bg-red-600 px-2 py-0.5 rounded font-extrabold uppercase">...</div>
+    </section>
+
+    <!-- Breadcrumbs -->
+    <section class="bg-white border-b border-gray-200 py-2 px-6 justify-between items-center no-print text-xs hidden sm:flex">
+      <div class="flex items-center gap-2 font-medium text-gray-600">
+        <i class="fa-solid fa-school text-emerald-600"></i>
+        <span id="breadcrumb-madrasah-name" class="font-semibold text-emerald-800">Madrasah Miftahul Ulum B44</span>
+      </div>
+      <div class="flex items-center gap-1.5 text-gray-500">
+        <i class="fa-solid fa-house"></i>
+        <span>Home</span>
+        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+        <span class="text-emerald-700 font-medium">Kas</span>
+      </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="flex-grow p-3 sm:p-6 max-w-[1600px] w-full mx-auto">
+      
+      <!-- Safe Error Boundary Screen (Menjamin sistem anti layar putih) -->
+      <div id="safe-error-fallback" class="bg-red-50 border border-red-200 rounded-2xl p-6 text-center max-w-lg mx-auto my-12 hidden">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-red-100 text-red-600 mb-4 text-2xl">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h3 class="text-lg font-bold text-red-900">Aplikasi Mengalami Hambatan</h3>
+        <p class="text-sm text-red-700 mt-2">Ditemukan kendala pemrosesan JavaScript pada peramban Anda. Tenang, seluruh data kas di Google Sheet tetap aman.</p>
+        <pre id="error-fallback-trace" class="bg-slate-900 text-red-300 text-[10px] text-left p-3 rounded-lg mt-4 overflow-auto max-h-40 font-mono"></pre>
+        <button onclick="window.location.reload()" class="mt-6 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-sm rounded-xl shadow-md transition-colors">
+          Muat Ulang Halaman
+        </button>
+      </div>
+
+      <!-- Toast Notification Container -->
+      <div id="toast-container" class="fixed bottom-20 md:bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full no-print"></div>
+
+      <!-- Kotak Kas (Main Card) -->
+      <div id="main-ledger-card" class="bg-white rounded-2xl shadow-md border-t-4 border-emerald-600 p-3 sm:p-6 mb-6 print-card">
+        
+        <!-- Card Header Controls -->
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4 border-b border-gray-100 no-print">
+          <div class="flex items-center gap-2.5">
+            <div class="bg-emerald-50 p-2 sm:p-2.5 rounded-xl text-emerald-700">
+              <i class="fa-solid fa-cart-shopping text-xl sm:text-2xl"></i>
+            </div>
+            <div>
+              <h2 class="font-bold text-base sm:text-lg text-gray-800 flex items-center gap-2">
+                Kas <span class="text-gray-400 font-normal text-xs sm:text-sm hidden sm:inline">Pendapatan dan Belanja Madrasah</span>
+              </h2>
+              <p id="sub-madrasah-title" class="text-xs text-gray-500">Madrasah Miftahul Ulum B44</p>
+            </div>
+          </div>
+
+          <!-- Dropdowns & Buttons Toolbar -->
+          <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full lg:w-auto">
+            <select id="filter-year" onchange="loadData()" class="bg-white border border-gray-300 text-gray-700 text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 p-2.5 shadow-sm font-semibold">
+              <option value="1445">1445</option>
+              <option value="1446">1446</option>
+              <option value="1447">1447</option>
+              <option value="1448" selected>1447/1448</option>
+              <option value="1449">1449</option>
+              <option value="1450">1450</option>
+            </select>
+
+            <select id="filter-month" onchange="loadData()" class="bg-white border border-gray-300 text-gray-700 text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 p-2.5 shadow-sm font-semibold">
+              <option value="1">1. Muharram</option>
+              <option value="2">2. Safar</option>
+              <option value="3">3. Rabi'al-Awwal</option>
+              <option value="4">4. Rabi'al-Akhir</option>
+              <option value="5">5. Jumadil-Awwal</option>
+              <option value="6">6. Jumadil-Akhir</option>
+              <option value="7">7. Rajab</option>
+              <option value="8">8. Sya'ban</option>
+              <option value="9">9. Ramadhan</option>
+              <option value="10">10. Syawwal</option>
+              <option value="11">11. Dzulqa'dah</option>
+              <option value="12">12. Dzulhijjah</option>
+            </select>
+
+            <button onclick="printMonthly()" class="bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-700 font-bold p-2.5 sm:px-4 rounded-xl text-sm shadow-sm flex items-center justify-center gap-1.5 transition-colors col-span-1">
+              <i class="fa-solid fa-print text-gray-500"></i> <span class="hidden sm:inline">Bulan</span>
+            </button>
+            <button onclick="openRekapModal()" class="bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-700 font-bold p-2.5 sm:px-4 rounded-xl text-sm shadow-sm flex items-center justify-center gap-1.5 transition-colors col-span-1">
+              <i class="fa-solid fa-list-check text-gray-500"></i> <span class="hidden sm:inline">Rekap</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-end gap-2.5 mt-4 pb-4 border-b border-gray-100 no-print">
+          <button onclick="openTransactionModal('PENDAPATAN')" class="bg-[#00a65a] hover:bg-emerald-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-lg flex items-center gap-1.5 shadow transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+            <i class="fa-solid fa-cart-plus"></i> PENDAPATAN
+          </button>
+          <button onclick="openTransactionModal('BELANJA')" class="bg-[#00c0ef] hover:bg-sky-600 text-white font-extrabold text-xs px-4 py-2.5 rounded-lg flex items-center gap-1.5 shadow transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+            <i class="fa-solid fa-cart-arrow-down"></i> BELANJA
+          </button>
+          <div class="bg-[#f39c12] text-white font-extrabold text-xs px-4 py-2.5 rounded-lg flex items-center gap-1.5 shadow">
+            <i class="fa-solid fa-scale-balanced"></i> SISA
+          </div>
+        </div>
+
+        <div id="table-skeleton" class="py-12 text-center">
+          <i class="fa-solid fa-circle-notch fa-spin text-4xl text-emerald-600 mb-3"></i>
+          <p class="text-sm text-gray-500 font-semibold">Menghubungkan ke Google Sheets...</p>
+        </div>
+
+        <!-- VIEW 1: DESKTOP TABLE VIEW -->
+        <div id="desktop-table-view" class="hidden md:block overflow-x-auto mt-4 rounded-xl border border-gray-200 shadow-inner">
+          <table class="w-full text-left border-collapse bg-white">
+            <thead>
+              <tr class="bg-gray-100 text-gray-700 font-black text-xs uppercase tracking-wider border-b border-gray-200">
+                <th class="py-4 px-4 text-center w-36">TANGGAL</th>
+                <th class="py-4 px-4 w-40 text-left">POS</th>
+                <th class="py-4 px-4 min-w-[300px] text-left">URAIAN</th>
+                <th class="py-4 px-4 text-right w-44">PENDAPATAN</th>
+                <th class="py-4 px-4 text-right w-44">BELANJA</th>
+                <th class="py-4 px-4 text-right w-44">SISA</th>
+                <th class="py-4 px-3 text-center w-24 no-print">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="ledger-body-desktop" class="divide-y divide-gray-100 text-sm font-semibold text-gray-700"></tbody>
+          </table>
+        </div>
+
+        <!-- VIEW 2: MOBILE CARD VIEW -->
+        <div id="mobile-card-view" class="block md:hidden space-y-3 mt-4 no-print">
+          <div id="ledger-cards-mobile-container" class="space-y-3"></div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- Bottom Navigation Dock for mobile phone viewports -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 p-2.5 flex justify-around items-center z-40 shadow-2xl no-print">
+      <button onclick="loadData()" class="flex flex-col items-center gap-1 text-emerald-400 font-semibold focus:outline-none">
+        <i class="fa-solid fa-wallet text-base"></i>
+        <span class="text-[10px]">Kas Utama</span>
+      </button>
+      
+      <button onclick="openTransactionModal('PENDAPATAN')" class="flex flex-col items-center gap-1 text-emerald-500 font-bold focus:outline-none">
+        <div class="bg-emerald-600/20 text-emerald-400 p-2 rounded-full w-9 h-9 flex items-center justify-center -mt-4 shadow-lg border border-emerald-500">
+          <i class="fa-solid fa-plus text-sm"></i>
+        </div>
+        <span class="text-[9px] mt-0.5">Pendapatan</span>
+      </button>
+
+      <button onclick="openTransactionModal('BELANJA')" class="flex flex-col items-center gap-1 text-sky-500 font-bold focus:outline-none">
+        <div class="bg-sky-600/20 text-sky-400 p-2 rounded-full w-9 h-9 flex items-center justify-center -mt-4 shadow-lg border border-sky-500">
+          <i class="fa-solid fa-minus text-sm"></i>
+        </div>
+        <span class="text-[9px] mt-0.5">Belanja</span>
+      </button>
+
+      <button onclick="openSettingsModal()" class="flex flex-col items-center gap-1 text-slate-400 hover:text-white font-medium focus:outline-none">
+        <i class="fa-solid fa-gears text-base"></i>
+        <span class="text-[10px]">Setelan</span>
+      </button>
+    </div>
+
+    <!-- Sidebar Drawer Panel -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/70 z-40 hidden transition-opacity duration-300"></div>
+    <aside id="sidebar-panel" class="fixed top-0 left-0 bottom-0 w-80 bg-slate-950 text-slate-100 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-2xl flex flex-col no-print">
+      <div class="p-5 border-b border-slate-800 bg-slate-900 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <img id="sidebar-logo" src="https://placehold.co/150x150/0ea755/ffffff?text=MMU+B44" alt="Logo" class="w-8 h-8 rounded-full border border-slate-700 object-cover bg-white">
+          <span class="font-bold text-base text-emerald-400 tracking-wide">KAS MMU B44</span>
+        </div>
+        <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+      
+      <div class="flex-grow p-4 space-y-2 overflow-y-auto">
+        <a href="#" onclick="toggleSidebar();" class="flex items-center gap-3 px-4 py-3 bg-emerald-600/15 border-l-4 border-emerald-500 text-emerald-400 rounded-r-lg font-semibold transition-all">
+          <i class="fa-solid fa-scale-balanced w-5"></i> Kas Utama
+        </a>
+        <button onclick="openSettingsModal(); toggleSidebar();" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-900 hover:text-white text-slate-400 rounded-lg font-medium transition-all text-left">
+          <i class="fa-solid fa-sliders w-5"></i> Pengaturan Aplikasi
+        </button>
+        <a id="spreadsheet-link" href="#" target="_blank" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-900 hover:text-white text-slate-400 rounded-lg font-medium transition-all">
+          <i class="fa-solid fa-file-excel w-5"></i> Buka Google Sheet
+        </a>
+        <button onclick="handleLogout()" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-950 hover:text-red-300 text-red-500 rounded-lg font-medium transition-all text-left">
+          <i class="fa-solid fa-right-from-bracket w-5"></i> Keluar Aplikasi
+        </button>
+      </div>
+
+      <div class="p-4 border-t border-slate-800 bg-slate-900 text-xs text-center text-slate-500">
+        <p class="font-semibold">Versi Aplikasi 4.6 (Stable Production)</p>
+        <p class="mt-1">&copy; 2026 Kas MMU B44</p>
+      </div>
+    </aside>
+  </div>
+
+  <!-- AREA KHUSUS CETAK LAPORAN -->
+  <div class="print-only p-8" id="print-area">
+    <div class="text-center mb-6">
+      <div class="flex justify-center items-center gap-4 mb-2">
+        <img id="print-logo" src="" alt="Logo" class="w-16 h-16 rounded-full object-cover border border-gray-300 bg-white">
+        <div class="text-left">
+          <h1 id="print-madrasah-title" class="text-xl font-bold uppercase tracking-wider text-black">MADRASAH MIFTAHUL ULUM B44</h1>
+          <p class="text-sm text-gray-600">Laporan Kas Pendapatan dan Belanja Bulanan</p>
+        </div>
+      </div>
+      <hr class="border-t-2 border-black my-2">
+      <p class="text-sm font-semibold">Tahun Hijriah: <span id="print-h-year">...</span> | Bulan: <span id="print-h-month">...</span></p>
+    </div>
+
+    <table class="w-full text-sm border-collapse" id="print-table"></table>
+
+    <div class="mt-12 grid grid-cols-2 text-center gap-12 text-sm">
+      <div>
+        <p>Mengetahui,</p>
+        <p class="font-bold mb-16">Kepala Madrasah</p>
+        <p class="underline font-bold">.........................................</p>
+      </div>
+      <div>
+        <p>Pasuruan, <span class="print-masehi-now"></span></p>
+        <p class="font-bold mb-16">Bendahara Madrasah</p>
+        <p id="print-operator-name" class="underline font-bold">...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD/EDIT TRANSACTION -->
+  <div id="transaction-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center sm:items-center justify-center p-0 sm:p-4 hidden no-print">
+    <div class="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-lg w-full transform transition-all overflow-hidden border border-gray-100 responsive-modal-content">
+      
+      <div id="modal-theme-header" class="px-6 py-4 text-white flex justify-between items-center bg-emerald-600">
+        <h3 id="modal-title" class="font-bold text-base sm:text-lg flex items-center gap-2">
+          <i class="fa-solid fa-wallet"></i> Tambah Pendapatan
+        </h3>
+        <button onclick="closeTransactionModal()" class="text-white/80 hover:text-white p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+
+      <form id="transaction-form" onsubmit="saveTransaction(event)" class="p-5 sm:p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+        <input type="hidden" id="tx-id">
+        <input type="hidden" id="tx-type" value="PENDAPATAN">
+
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Tanggal Masehi</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-400">
+              <i class="fa-solid fa-calendar-days"></i>
+            </span>
+            <input type="date" id="tx-date-masehi" required onchange="handleFormDateChange()" class="w-full bg-gray-50 border border-gray-300 text-base sm:text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 block pl-10 p-3 shadow-sm font-medium">
+          </div>
+        </div>
+
+        <div class="bg-emerald-50/50 border border-emerald-100 rounded-xl p-3">
+          <span class="block text-[10px] font-extrabold text-emerald-800 uppercase tracking-wider mb-1">Hasil Konversi Hijriah & Jawa</span>
+          <p id="tx-date-hijri-preview" class="font-bold text-xs sm:text-sm text-emerald-950 flex items-center flex-wrap gap-1.5">
+            <i class="fa-solid fa-moon text-emerald-600"></i> Memilih tanggal...
+          </p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Pos Anggaran</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-400">
+              <i class="fa-solid fa-tags"></i>
+            </span>
+            <input type="text" id="tx-pos" required placeholder="Pilih atau tulis pos anggaran" list="pos-suggestions" class="w-full bg-gray-50 border border-gray-300 text-base sm:text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 block pl-10 p-3 shadow-sm font-medium">
+            <datalist id="pos-suggestions">
+              <option value="Syahriyah (Bulanan)">
+              <option value="Sumbangan Wali Murid">
+              <option value="Donatur Tetap">
+              <option value="Pendidikan & ATK">
+              <option value="Sarana & Prasarana">
+              <option value="Pembangunan Gedung">
+              <option value="Siswa Yatama">
+              <option value="Konsumsi & Rapat">
+              <option value="Lain-lain">
+            </datalist>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Uraian / Deskripsi</label>
+          <textarea id="tx-desc" required rows="2" placeholder="Tuliskan keterangan detail transaksi..." class="w-full bg-gray-50 border border-gray-300 text-base sm:text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 block p-3 shadow-sm font-medium"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Nominal (Rupiah)</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-600 font-bold text-sm">
+              Rp
+            </span>
+            <input type="number" id="tx-amount" required min="1" placeholder="0" class="w-full bg-gray-50 border border-gray-300 text-base sm:text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 block pl-10 p-3 shadow-sm font-bold">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Operator (Bendahara)</label>
+          <input type="text" id="tx-operator" required class="w-full bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-xl p-3 shadow-sm font-semibold cursor-not-allowed" readonly>
+        </div>
+
+        <div class="flex justify-end gap-2.5 pt-4 border-t border-gray-100">
+          <button type="button" onclick="closeTransactionModal()" class="px-5 py-2.5 text-sm font-bold text-gray-500 hover:text-gray-700 p-2 transition-colors">Batal</button>
+          <button type="submit" id="btn-save-tx" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5">
+            <i class="fa-solid fa-floppy-disk"></i> Simpan
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- MODAL: APPLICATION SETTINGS -->
+  <div id="settings-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-0 sm:p-4 hidden no-print">
+    <div class="bg-white rounded-t-3xl sm:rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-gray-100 responsive-modal-content">
+      
+      <div class="px-6 py-4 bg-slate-900 text-white flex justify-between items-center sticky top-0 z-10">
+        <h3 class="font-bold text-base sm:text-lg flex items-center gap-2">
+          <i class="fa-solid fa-gears text-emerald-400"></i> Pengaturan Aplikasi
+        </h3>
+        <button onclick="closeSettingsModal()" class="text-gray-400 hover:text-white p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+
+      <form id="settings-form" onsubmit="saveSettings(event)" class="p-5 sm:p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Logo Madrasah</label>
+          <div class="flex items-center gap-4 bg-gray-50 p-3 rounded-xl border border-gray-200">
+            <img id="settings-logo-preview" src="https://placehold.co/150x150/0ea755/ffffff?text=MMU+B44" alt="Preview Logo" class="w-14 h-14 rounded-full object-cover border border-gray-300 bg-white">
+            <div class="flex-grow">
+              <input type="file" id="settings-logo-file" accept="image/*" onchange="previewAndConvertLogo()" class="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+              <p class="text-[9px] text-gray-400 mt-1">Format gambar (Maksimal 1MB).</p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Nama Madrasah</label>
+          <input type="text" id="settings-madrasah-name" required class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-base sm:text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 block p-3 shadow-sm font-semibold">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Nama Operator (Bendahara)</label>
+          <input type="text" id="settings-operator-name" required class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-base sm:text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 block p-3 shadow-sm font-semibold">
+        </div>
+
+        <div class="bg-emerald-50/25 border border-emerald-100 rounded-xl p-3.5 space-y-3">
+          <span class="block text-xs font-extrabold text-emerald-800 uppercase tracking-wider mb-1">Kredensial Akses Login</span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Username Login</label>
+              <input type="text" id="settings-username" required class="w-full bg-white border border-gray-200 text-gray-900 text-xs rounded-lg focus:ring-emerald-500 p-2.5 shadow-sm font-semibold">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Password Login</label>
+              <div class="relative flex items-center">
+                <input type="password" id="settings-password" required class="w-full bg-white border border-gray-200 text-gray-900 text-xs rounded-lg focus:ring-emerald-500 p-2.5 pr-10 shadow-sm font-semibold relative z-0">
+                <button type="button" onclick="togglePasswordVisibility('settings-password', this)" class="absolute right-2 flex items-center text-gray-400 hover:text-emerald-600 transition-colors z-20 p-1.5 focus:outline-none justify-center">
+                  <i class="fa-solid fa-eye text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Tahun Ajaran Hijriah Aktif</label>
+          <input type="text" id="settings-academic-year" required placeholder="Contoh: 1447/1448" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-base sm:text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 block p-3 shadow-sm font-semibold">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">ID Google Sheet (Penyimpanan)</label>
+          <input type="text" id="settings-ss-url" readonly class="w-full bg-gray-100 border border-gray-200 text-gray-400 text-xs rounded-xl p-2.5 font-mono cursor-not-allowed" style="text-overflow: ellipsis;">
+        </div>
+
+        <div class="flex justify-end gap-2.5 pt-4 border-t border-gray-100 sticky bottom-0 bg-white z-10">
+          <button type="button" onclick="closeSettingsModal()" class="px-5 py-2.5 text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors">Batal</button>
+          <button type="submit" id="btn-save-settings" class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5">
+            <i class="fa-solid fa-floppy-disk text-emerald-400"></i> Simpan
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- MODAL: ANNUAL REKAPITULASI -->
+  <div id="rekap-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-0 sm:p-4 hidden no-print">
+    <div class="bg-white rounded-t-3xl sm:rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col border border-gray-100 responsive-modal-content">
+      
+      <div class="px-6 py-4 bg-emerald-800 text-white flex justify-between items-center shrink-0">
+        <h3 class="font-bold text-base sm:text-lg flex items-center gap-2">
+          <i class="fa-solid fa-chart-line text-emerald-300"></i> Rekapitulasi Kas Tahunan
+        </h3>
+        <button onclick="closeRekapModal()" class="text-gray-300 hover:text-white p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+
+      <div class="p-5 sm:p-6 overflow-y-auto space-y-4 flex-grow">
+        <div class="flex justify-between items-center flex-wrap gap-2">
+          <p class="text-xs sm:text-sm font-medium text-gray-600">
+            Ringkasan Keuangan Tahun Hijriah: <span id="rekap-target-year" class="font-extrabold text-emerald-800">...</span>
+          </p>
+          <button onclick="printRekapTahunan()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs shadow flex items-center gap-1.5 transition-colors">
+            <i class="fa-solid fa-print"></i> Cetak Rekap Tahunan
+          </button>
+        </div>
+
+        <div class="border border-gray-200 rounded-xl overflow-hidden">
+          <table class="w-full text-xs sm:text-sm text-left border-collapse">
+            <thead class="bg-gray-100 text-gray-700 font-bold text-[10px] sm:text-xs uppercase tracking-wider border-b border-gray-200">
+              <tr>
+                <th class="py-3 px-4">Bulan Hijriah</th>
+                <th class="py-3 px-4 text-right">Pendapatan</th>
+                <th class="py-3 px-4 text-right">Belanja</th>
+                <th class="py-3 px-4 text-right">Sisa Saldo</th>
+              </tr>
+            </thead>
+            <tbody id="rekap-table-body" class="divide-y divide-gray-100 font-medium"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: CUSTOM ALERT/CONFIRM DIALOG (Defensive interaction target) -->
+  <div id="custom-confirm-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden no-print">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 border border-gray-100 transform transition-all scale-95 opacity-0 duration-200" id="confirm-modal-content">
+      <div class="text-center">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-50 text-amber-600 mb-4 animate-bounce" id="confirm-icon">
+          <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+        </div>
+        <h3 class="text-lg font-bold text-gray-800" id="confirm-title">Konfirmasi</h3>
+        <p class="text-xs text-gray-500 mt-2 leading-relaxed" id="confirm-message">Apakah Anda yakin ingin melakukan tindakan ini?</p>
+      </div>
+      <div class="mt-6 flex justify-end gap-2.5">
+        <button type="button" id="confirm-cancel-btn" class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 transition-colors">Batal</button>
+        <button type="button" id="confirm-ok-btn" class="px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow-md transition-colors">Ya, Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Core JavaScript Logic -->
+  <script>
+    /**
+     * SAFE STORAGE MODULE: Mencegah kegagalan fatal rendering (blank screen) akibat
+     * kebijakan isolasi cookie/sessionStorage browser di dalam Google iframe.
+     */
+    const SafeStorage = {
+      _memory: {},
+      getItem(key) {
+        try {
+          return window.sessionStorage ? window.sessionStorage.getItem(key) : this._memory[key];
+        } catch (e) {
+          console.warn("Storage diblokir browser, beralih ke RAM virtual.", e);
+          return this._memory[key] || null;
+        }
+      },
+      setItem(key, value) {
+        try {
+          if (window.sessionStorage) window.sessionStorage.setItem(key, value);
+        } catch (e) {
+          console.warn("Storage diblokir browser, menyimpan di RAM virtual.", e);
+          this._memory[key] = value;
+        }
+      },
+      removeItem(key) {
+        try {
+          if (window.sessionStorage) window.sessionStorage.removeItem(key);
+        } catch (e) {
+          delete this._memory[key];
+        }
+      },
+      getLocal(key) {
+        try {
+          return window.localStorage ? window.localStorage.getItem(key) : this._memory["local_" + key];
+        } catch (e) {
+          console.warn("Local storage diblokir browser, membaca dari RAM virtual.", e);
+          return this._memory["local_" + key] || null;
+        }
+      },
+      setLocal(key, value) {
+        try {
+          if (window.localStorage) window.localStorage.setItem(key, value);
+        } catch (e) {
+          console.warn("Local storage diblokir browser, menyimpan di RAM virtual.", e);
+          this._memory["local_" + key] = value;
+        }
+      }
+    };
+
+    let currentSettings = {};
+    let currentTransactions = [];
+    let previousBalance = 0;
+    let selectedYear = 1448;
+    let selectedMonth = 1;
+    let base64LogoData = "";
+    let confirmCallback = null;
+
+    const hijriMonths = [
+      "Muharram", "Safar", "Rabi'al-Awwal", "Rabi'al-Akhir",
+      "Jumadil-Awwal", "Jumadil-Akhir", "Rajab", "Sya'ban",
+      "Ramadhan", "Syawwal", "Dzulqa'dah", "Dzulhijjah"
+    ];
+
+    function convertToHijri(date) {
+      try {
+        const formatter = new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura', {
+          day: 'numeric',
+          month: 'numeric',
+          year: 'numeric'
+        });
+        const parts = formatter.formatToParts(date);
+        const day = parts.find(p => p.type === 'day').value;
+        const monthNum = parseInt(parts.find(p => p.type === 'month').value, 10);
+        const year = parts.find(p => p.type === 'year').value;
+        
+        return {
+          day: parseInt(day, 10),
+          monthNum: monthNum,
+          monthName: hijriMonths[monthNum - 1] || "Muharram",
+          year: parseInt(year, 10),
+          formatted: `${day} ${hijriMonths[monthNum - 1] || "Muharram"} ${year}`
+        };
+      } catch (e) {
+        try {
+          return computeTaburuHijri(date);
+        } catch (err) {
+          return {
+            day: 1,
+            monthNum: 1,
+            monthName: "Muharram",
+            year: 1448,
+            formatted: "01 Muharram 1448"
+          };
+        }
+      }
+    }
+
+    function computeTaburuHijri(date) {
+      let year = date.getFullYear();
+      let month = date.getMonth() + 1;
+      let day = date.getDate();
+      if (month < 3) {
+        year -= 1;
+        month += 12;
+      }
+      const a = Math.floor(year / 100);
+      const b = 2 - a + Math.floor(a / 4);
+      const jd = Math.floor(365.25 * (year + 4716)) + Math.floor(30.6001 * (month + 1)) + day + b - 1524.5;
+      
+      const l = Math.floor(jd) - 1948440 + 10632;
+      const n = Math.floor((l - 1) / 10631);
+      let l_rem = l - 10631 * n + 354;
+      const j = Math.floor((10985 - l_rem) / 5316) * Math.floor((50 * l_rem) / 17719) + Math.floor(l_rem / 5670) * Math.floor((43 * l_rem) / 15238);
+      l_rem = l_rem - Math.floor((30 - j) / 15) * Math.floor((17719 * j) / 50) - Math.floor(j / 16) * Math.floor((15238 * j) / 43) + 29;
+      const hMonth = Math.floor((24 * l_rem) / 709);
+      const hDay = l_rem - Math.floor((709 * hMonth) / 24);
+      const hYear = 30 * n + j - 30;
+
+      return {
+        day: hDay,
+        monthNum: hMonth,
+        monthName: hijriMonths[hMonth - 1] || "Muharram",
+        year: hYear,
+        formatted: `${hDay} ${hijriMonths[hMonth - 1] || "Muharram"} ${hYear}`
+      };
+    }
+
+    function getJavaneseMarketDay(date) {
+      try {
+        const marketDays = ["Legi", "Pahing", "Pon", "Wage", "Kliwon"];
+        const refDate = new Date(2026, 6, 7); // Acuan: 7 Juli 2026 adalah kliwon
+        
+        const d1 = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const d2 = new Date(refDate.getFullYear(), refDate.getMonth(), refDate.getDate());
+        
+        const msPerDay = 24 * 60 * 60 * 1000;
+        const diffDays = Math.round((d1 - d2) / msPerDay);
+        
+        const index = (((4 + (diffDays % 5)) % 5) + 5) % 5;
+        return marketDays[index];
+      } catch (e) {
+        return "Kliwon";
+      }
+    }
+
+    function getIndonesianDayName(date) {
+      try {
+        const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+        return days[date.getDay()];
+      } catch (e) {
+        return "Selasa";
+      }
+    }
+
+    function getKwartalName(monthNum, year) {
+      try {
+        const prevYear = year - 1;
+        const range = `${prevYear}/${year}`;
+        if (monthNum >= 1 && monthNum <= 3) {
+          return { name: "Kwartal Satu", range: range };
+        } else if (monthNum >= 4 && monthNum <= 6) {
+          return { name: "Kwartal Dua", range: range };
+        } else if (monthNum >= 7 && monthNum <= 9) {
+          return { name: "Kwartal Tiga", range: range };
+        } else {
+          return { name: "Kwartal Empat", range: range };
+        }
+      } catch (e) {
+        return { name: "Kwartal Satu", range: "1447/1448" };
+      }
+    }
+
+    function showConfirm(title, message, onConfirm, okText = "Ya, Lanjutkan", isDanger = true) {
+      document.getElementById("confirm-title").innerText = title;
+      document.getElementById("confirm-message").innerText = message;
+      
+      const okBtn = document.getElementById("confirm-ok-btn");
+      okBtn.innerText = okText;
+      
+      if (isDanger) {
+        okBtn.className = "px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow-md transition-colors";
+      } else {
+        okBtn.className = "px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-md transition-colors";
+      }
+      
+      confirmCallback = onConfirm;
+      
+      const modal = document.getElementById("custom-confirm-modal");
+      const content = document.getElementById("confirm-modal-content");
+      modal.classList.remove("hidden");
+      setTimeout(() => {
+        content.classList.remove("scale-95", "opacity-0");
+        content.classList.add("scale-100", "opacity-100");
+      }, 50);
+    }
+
+    function closeConfirm() {
+      const modal = document.getElementById("custom-confirm-modal");
+      const content = document.getElementById("confirm-modal-content");
+      content.classList.remove("scale-100", "opacity-100");
+      content.classList.add("scale-95", "opacity-0");
+      setTimeout(() => {
+        modal.classList.add("hidden");
+        confirmCallback = null;
+      }, 200);
+    }
+
+    function updateHeaderWidgets(targetDate = new Date()) {
+      try {
+        const hijri = convertToHijri(targetDate);
+        const masehiFormatted = targetDate.toLocaleDateString('id-ID', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        });
+        
+        const javanesePasaran = getJavaneseMarketDay(targetDate);
+        const dayName = getIndonesianDayName(targetDate);
+        const kwartal = getKwartalName(hijri.monthNum, hijri.year);
+
+        const headerText = `${hijri.day} ${hijri.monthName} ${hijri.year} | ${masehiFormatted}`;
+        const dayPasaranText = `${dayName} ${javanesePasaran.toUpperCase()}`;
+
+        const hDateEl = document.getElementById("widget-hijri-date");
+        if (hDateEl) hDateEl.innerText = headerText;
+        
+        const jDayEl = document.getElementById("widget-javanese-day");
+        if (jDayEl) jDayEl.innerText = dayPasaranText;
+        
+        const kwInfoEl = document.getElementById("widget-kwartal-info");
+        if (kwInfoEl) kwInfoEl.innerText = `${kwartal.name} ${kwartal.range}`;
+
+        const mHijriEl = document.getElementById("mobile-hijri-widget");
+        if (mHijriEl) mHijriEl.innerText = `${hijri.day} ${hijri.monthName} ${hijri.year} - ${dayPasaranText}`;
+        
+        const mKwEl = document.getElementById("mobile-kwartal-widget");
+        if (mKwEl) mKwEl.innerText = `Kwartal: ${kwartal.name}`;
+        
+        const fYearEl = document.getElementById("filter-year");
+        if (fYearEl && !fYearEl.dataset.initialized) {
+          const hasOption = Array.from(fYearEl.options).some(opt => opt.value == hijri.year);
+          if (hasOption) {
+            fYearEl.value = hijri.year;
+          } else {
+            const opt = document.createElement("option");
+            opt.value = hijri.year;
+            opt.text = hijri.year;
+            fYearEl.add(opt);
+            fYearEl.value = hijri.year;
+          }
+          const fMonthEl = document.getElementById("filter-month");
+          if (fMonthEl) fMonthEl.value = hijri.monthNum;
+          fYearEl.dataset.initialized = "true";
+          selectedYear = hijri.year;
+          selectedMonth = hijri.monthNum;
+        }
+      } catch (err) {
+        console.error("Gagal menyinkronkan widget header:", err);
+      }
+    }
+
+    function togglePasswordVisibility(fieldId, button) {
+      const field = document.getElementById(fieldId);
+      const icon = button.querySelector('i');
+      if (field.type === "password") {
+        field.type = "text";
+        icon.className = "fa-solid fa-eye-slash text-sm";
+      } else {
+        field.type = "password";
+        icon.className = "fa-solid fa-eye text-sm";
+      }
+    }
+
+    function handleLogin(event) {
+      event.preventDefault();
+      const user = document.getElementById("login-username").value;
+      const pass = document.getElementById("login-password").value;
+      const btn = document.getElementById("btn-login");
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Memvalidasi...';
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(res => {
+            btn.disabled = false;
+            btn.innerHTML = 'Masuk Aplikasi <i class="fa-solid fa-right-to-bracket"></i>';
+            if (res && res.success) {
+              SafeStorage.setItem("isLoggedIn", "true");
+              showToast("Autentikasi Berhasil! Selamat datang.");
+              triggerDashboardEntrance();
+            } else {
+              showToast((res && res.error) ? res.error : "Username atau Password salah!", "error");
+            }
+          })
+          .withFailureHandler(err => {
+            btn.disabled = false;
+            btn.innerHTML = 'Masuk Aplikasi <i class="fa-solid fa-right-to-bracket"></i>';
+            showToast("Gagal terhubung ke verifikator server: " + err.toString(), "error");
+          })
+          .verifyCredentials(user, pass);
+      } else {
+        // Simulasi lokal jika offline
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.innerHTML = 'Masuk Aplikasi <i class="fa-solid fa-right-to-bracket"></i>';
+          if (user.trim().toLowerCase() === "admin" && pass.trim() === "mmuB44") {
+            SafeStorage.setItem("isLoggedIn", "true");
+            showToast("Masuk Berhasil! (Offline Mode)");
+            triggerDashboardEntrance();
+          } else {
+            showToast("Username / Password salah!", "error");
+          }
+        }, 600);
+      }
+    }
+
+    function triggerDashboardEntrance() {
+      try {
+        const loginScreen = document.getElementById("login-screen");
+        const appDashboard = document.getElementById("app-dashboard");
+        
+        if (loginScreen && appDashboard) {
+          loginScreen.classList.add("opacity-0", "scale-95", "pointer-events-none");
+          appDashboard.classList.remove("hidden");
+          
+          void appDashboard.offsetWidth; // Force recalculation
+          
+          appDashboard.classList.remove("dashboard-hidden");
+          appDashboard.classList.add("dashboard-visible");
+          
+          loadData();
+          
+          setTimeout(() => {
+            loginScreen.style.display = "none";
+          }, 550);
+        }
+      } catch (e) {
+        showToast("Gagal merender dashboard: " + e.message, "error");
+      }
+    }
+
+    function bypassLogin() {
+      const loginScreen = document.getElementById("login-screen");
+      const appDashboard = document.getElementById("app-dashboard");
+      
+      if (loginScreen && appDashboard) {
+        loginScreen.style.display = "none";
+        appDashboard.classList.remove("hidden", "dashboard-hidden");
+        appDashboard.classList.add("dashboard-visible");
+        loadData();
+      }
+    }
+
+    function handleLogout() {
+      showConfirm(
+        "Keluar Aplikasi",
+        "Apakah Anda yakin ingin keluar dari aplikasi KAS MMU B44?",
+        function() {
+          SafeStorage.removeItem("isLoggedIn");
+          showToast("Berhasil keluar dari sesi aplikasi.", "info");
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
+        },
+        "Ya, Keluar",
+        true
+      );
+    }
+
+    function showToast(message, type = "success") {
+      const container = document.getElementById("toast-container");
+      if (!container) return;
+      const toast = document.createElement("div");
+      
+      let bg = "bg-emerald-600";
+      let icon = "fa-circle-check";
+      if (type === "error") {
+        bg = "bg-red-600";
+        icon = "fa-triangle-exclamation";
+      } else if (type === "info") {
+        bg = "bg-blue-600";
+        icon = "fa-circle-info";
+      }
+      
+      toast.className = `${bg} text-white px-4 py-3 rounded-xl shadow-lg flex items-center justify-between gap-2.5 transform translate-y-5 opacity-0 transition-all duration-300 text-xs sm:text-sm font-semibold w-[90vw] sm:w-auto`;
+      toast.innerHTML = `<div class="flex items-center gap-2"><i class="fa-solid ${icon}"></i> <span>${message}</span></div>`;
+      
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.classList.remove("translate-y-5", "opacity-0");
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add("translate-y-5", "opacity-0");
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById("sidebar-panel");
+      const overlay = document.getElementById("sidebar-overlay");
+      if (!sidebar || !overlay) return;
+      const isHidden = sidebar.classList.contains("-translate-x-full");
+
+      if (isHidden) {
+        sidebar.classList.remove("-translate-x-full");
+        overlay.classList.remove("hidden");
+      } else {
+        sidebar.classList.add("-translate-x-full");
+        overlay.classList.add("hidden");
+      }
+    }
+
+    function formatIDR(amount) {
+      if (amount === 0 || isNaN(amount)) return "-";
+      return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(amount);
+    }
+
+    function loadData() {
+      const fYear = document.getElementById("filter-year");
+      const fMonth = document.getElementById("filter-month");
+      if (!fYear || !fMonth) return;
+
+      selectedYear = parseInt(fYear.value, 10);
+      selectedMonth = parseInt(fMonth.value, 10);
+      
+      const skeleton = document.getElementById("table-skeleton");
+      if (skeleton) skeleton.classList.remove("hidden");
+      
+      const dTableView = document.getElementById("desktop-table-view");
+      if (dTableView) dTableView.classList.add("opacity-40");
+      
+      const mCardView = document.getElementById("mobile-card-view");
+      if (mCardView) mCardView.classList.add("opacity-40");
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(onDataLoaded)
+          .withFailureHandler(onDataLoadFailed)
+          .getAppData(selectedYear, selectedMonth);
+      } else {
+        // Mock data jika offline
+        setTimeout(() => {
+          const mockData = {
+            success: true,
+            settings: {
+              logoUrl: "https://placehold.co/150x150/0ea755/ffffff?text=MMU+B44",
+              madrasahName: "Madrasah Miftahul Ulum B44",
+              operatorName: "MUH. FAUZAN AZHIMA AZ",
+              academicYear: "1447/1448",
+              username: "admin",
+              password: "mmuB44"
+            },
+            transactions: [],
+            previousBalance: 0,
+            spreadsheetUrl: "#"
+          };
+          onDataLoaded(mockData);
+        }, 800);
+      }
+    }
+
+    function onDataLoaded(response) {
+      const skeleton = document.getElementById("table-skeleton");
+      if (skeleton) skeleton.classList.add("hidden");
+      
+      const dTableView = document.getElementById("desktop-table-view");
+      if (dTableView) dTableView.classList.remove("opacity-40");
+      
+      const mCardView = document.getElementById("mobile-card-view");
+      if (mCardView) mCardView.classList.remove("opacity-40");
+      
+      if (!response || !response.success) {
+        showToast("Gagal memuat data: " + (response ? response.error : "Unknown error"), "error");
+        return;
+      }
+
+      currentSettings = response.settings || {};
+      currentTransactions = response.transactions || [];
+      previousBalance = response.previousBalance || 0;
+
+      const breadcrumb = document.getElementById("breadcrumb-madrasah-name");
+      if (breadcrumb) breadcrumb.innerText = currentSettings.madrasahName || "MMU B44";
+      
+      const subTitle = document.getElementById("sub-madrasah-title");
+      if (subTitle) subTitle.innerText = currentSettings.madrasahName || "MMU B44";
+      
+      const opDisplay = document.getElementById("operator-name-display");
+      if (opDisplay) opDisplay.innerText = currentSettings.operatorName || "Bendahara";
+      
+      const logoUrl = currentSettings.logoUrl || "https://placehold.co/150x150/0ea755/ffffff?text=MMU+B44";
+      
+      const hLogo = document.getElementById("header-logo");
+      if (hLogo) hLogo.src = logoUrl;
+      
+      const sLogo = document.getElementById("sidebar-logo");
+      if (sLogo) sLogo.src = logoUrl;
+      
+      const oAvatar = document.getElementById("operator-avatar");
+      if (oAvatar) oAvatar.src = logoUrl;
+      
+      const loginPreview = document.getElementById("login-logo-preview");
+      if (loginPreview) loginPreview.src = logoUrl;
+      
+      SafeStorage.setLocal("mmu_b44_cached_logo", logoUrl);
+      
+      const ssLink = document.getElementById("spreadsheet-link");
+      if (ssLink) ssLink.href = response.spreadsheetUrl || "#";
+
+      renderLedgerTable();
+    }
+
+    function onDataLoadFailed(err) {
+      const skeleton = document.getElementById("table-skeleton");
+      if (skeleton) skeleton.classList.add("hidden");
+      
+      const dTableView = document.getElementById("desktop-table-view");
+      if (dTableView) dTableView.classList.remove("opacity-40");
+      
+      const mCardView = document.getElementById("mobile-card-view");
+      if (mCardView) mCardView.classList.remove("opacity-40");
+      
+      showToast("Gagal terhubung dengan server: " + err.toString(), "error");
+    }
+
+    function renderLedgerTable() {
+      const tbodyDesktop = document.getElementById("ledger-body-desktop");
+      const mobileContainer = document.getElementById("ledger-cards-mobile-container");
+      if (!tbodyDesktop || !mobileContainer) return;
+      
+      tbodyDesktop.innerHTML = "";
+      mobileContainer.innerHTML = "";
+
+      const firstRowDateStr = `01 ${hijriMonths[selectedMonth - 1] || 'Muharram'}`;
+      let runningBalance = previousBalance;
+
+      // 1. RENDERING SALDO BULAN LALU
+      const saldoLaluTr = document.createElement("tr");
+      saldoLaluTr.className = "bg-gray-50/50 hover:bg-gray-100/50 transition-colors";
+      saldoLaluTr.innerHTML = `
+        <td class="py-4 px-4 text-center font-bold text-gray-500">${firstRowDateStr}</td>
+        <td class="py-4 px-4">-</td>
+        <td class="py-4 px-4 font-bold text-slate-800">Saldo Bulan Lalu</td>
+        <td class="py-4 px-4 text-right font-bold text-slate-800">${formatIDR(previousBalance)}</td>
+        <td class="py-4 px-4 text-right font-bold text-slate-400">-</td>
+        <td class="py-4 px-4 text-right font-bold text-slate-800">${formatIDR(previousBalance)}</td>
+        <td class="py-4 px-3 text-center no-print">-</td>
+      `;
+      tbodyDesktop.appendChild(saldoLaluTr);
+
+      const saldoLaluCard = document.createElement("div");
+      saldoLaluCard.className = "bg-white p-4 rounded-xl border-l-4 border-slate-400 shadow-sm space-y-1";
+      saldoLaluCard.innerHTML = `
+        <div class="flex justify-between items-center text-xs text-gray-500">
+          <span class="font-bold">${firstRowDateStr}</span>
+          <span>Sistem Kas</span>
+        </div>
+        <p class="font-bold text-sm text-slate-800">Saldo Bulan Lalu</p>
+        <div class="flex justify-between items-center pt-2 border-t border-gray-100">
+          <span class="text-xs text-gray-400">Kumulatif</span>
+          <span class="text-sm font-extrabold text-slate-700">${formatIDR(previousBalance)}</span>
+        </div>
+      `;
+      mobileContainer.appendChild(saldoLaluCard);
+
+      let totalPendapatanBulanIni = 0;
+      let totalBelanjaBulanIni = 0;
+
+      // 2. RENDERING DAFTAR TRANSAKSI DINAMIS
+      currentTransactions.forEach(tx => {
+        const amountIn = tx.type === "PENDAPATAN" ? tx.amount : 0;
+        const amountOut = tx.type === "BELANJA" ? tx.amount : 0;
+        
+        totalPendapatanBulanIni += amountIn;
+        totalBelanjaBulanIni += amountOut;
+        runningBalance = runningBalance + amountIn - amountOut;
+
+        const dateObj = new Date(tx.dateMasehi);
+        const dayHijri = tx.dateHijri.split(" ")[0] || "01";
+        const cleanHijriDate = `${dayHijri} ${tx.dateHijri.split(" ")[1] || ""}`;
+
+        // Desktop Row
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-gray-50 transition-colors border-b border-gray-100 group";
+        tr.innerHTML = `
+          <td class="py-4 px-4 text-center">
+            <div class="font-bold text-gray-800">${cleanHijriDate}</div>
+            <div class="text-[10px] text-gray-400 no-print">${dateObj.toLocaleDateString('id-ID')}</div>
+          </td>
+          <td class="py-4 px-4">
+            <span class="inline-block bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-full font-semibold max-w-[120px] truncate" title="${tx.pos}">${tx.pos || '-'}</span>
+          </td>
+          <td class="py-4 px-4 font-bold text-gray-800 whitespace-normal break-words max-w-xs sm:max-w-md">${tx.description}</td>
+          <td class="py-4 px-4 text-right font-bold text-slate-800">${tx.type === 'PENDAPATAN' ? formatIDR(tx.amount) : '-'}</td>
+          <td class="py-4 px-4 text-right font-bold text-[#00c0ef]">${tx.type === 'BELANJA' ? formatIDR(tx.amount) : '-'}</td>
+          <td class="py-4 px-4 text-right font-bold text-slate-800">${formatIDR(runningBalance)}</td>
+          <td class="py-4 px-3 text-center no-print">
+            <div class="flex items-center justify-center gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
+              <button onclick="openEditTransaction('${tx.id}')" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit Transaksi">
+                <i class="fa-solid fa-pen-to-square text-base"></i>
+              </button>
+              <button onclick="deleteTransaction('${tx.id}')" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus Transaksi">
+                <i class="fa-solid fa-trash-can text-base"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        tbodyDesktop.appendChild(tr);
+
+        // Mobile Card (Swipe / Touch Friendly)
+        const isPendapatan = tx.type === "PENDAPATAN";
+        const cardColorClass = isPendapatan ? "border-emerald-500" : "border-sky-500";
+        const textAmountColor = isPendapatan ? "text-emerald-600" : "text-sky-600";
+        const badgeColor = isPendapatan ? "bg-emerald-100 text-emerald-800" : "bg-sky-100 text-sky-800";
+
+        const mCard = document.createElement("div");
+        mCard.className = `bg-white p-4 rounded-xl border-l-4 ${cardColorClass} shadow-sm space-y-2 relative`;
+        mCard.innerHTML = `
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="font-extrabold text-sm text-slate-800">${cleanHijriDate}</div>
+              <div class="text-[9px] text-gray-400 mt-0.5">${dateObj.toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'})}</div>
+            </div>
+            <span class="inline-block ${badgeColor} text-[10px] px-2 py-0.5 rounded-full font-bold max-w-[120px] truncate">${tx.pos || 'Tanpa Pos'}</span>
+          </div>
+
+          <p class="text-xs font-bold text-slate-700 leading-relaxed pr-16">${tx.description}</p>
+
+          <div class="flex justify-between items-center pt-2.5 border-t border-gray-100 text-xs">
+            <div>
+              <span class="text-[10px] text-gray-400 block uppercase font-bold">Nominal</span>
+              <span class="font-extrabold ${textAmountColor} text-sm">${isPendapatan ? '+' : '-'} Rp ${formatIDR(tx.amount)}</span>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] text-gray-400 block uppercase font-bold">Sisa</span>
+              <span class="font-bold text-slate-800 text-sm">Rp ${formatIDR(runningBalance)}</span>
+            </div>
+          </div>
+
+          <div class="absolute top-1 right-2 flex items-center gap-1">
+            <button onclick="openEditTransaction('${tx.id}')" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg min-w-[36px] min-h-[36px] flex items-center justify-center">
+              <i class="fa-solid fa-pen-to-square text-base"></i>
+            </button>
+            <button onclick="deleteTransaction('${tx.id}')" class="p-2 text-red-600 hover:bg-red-50 rounded-lg min-w-[36px] min-h-[36px] flex items-center justify-center">
+              <i class="fa-solid fa-trash-can text-base"></i>
+            </button>
+          </div>
+        `;
+        mobileContainer.appendChild(mCard);
+      });
+
+      const totalSisaBulanIni = previousBalance + totalPendapatanBulanIni - totalBelanjaBulanIni;
+
+      // 3. RENDERING JUMLAH AKHIR BULAN
+      const totalTr = document.createElement("tr");
+      totalTr.className = "bg-gray-100 text-slate-900 border-t-2 border-slate-300 font-extrabold text-xs sm:text-sm";
+      totalTr.innerHTML = `
+        <td class="py-4 px-4 text-center uppercase" colspan="3">JUMLAH AKHIR BULAN</td>
+        <td class="py-4 px-4 text-right text-slate-900 font-bold">${formatIDR(totalPendapatanBulanIni)}</td>
+        <td class="py-4 px-4 text-right text-slate-900 font-bold">${formatIDR(totalBelanjaBulanIni)}</td>
+        <td class="py-4 px-4 text-right text-slate-900 font-bold">${formatIDR(totalSisaBulanIni)}</td>
+        <td class="py-4 px-3 text-center no-print">-</td>
+      `;
+      tbodyDesktop.appendChild(totalTr);
+
+      const mSummaryCard = document.createElement("div");
+      mSummaryCard.className = "bg-[#00a65a] text-white p-4 rounded-xl shadow-md space-y-2 mt-4";
+      mSummaryCard.innerHTML = `
+        <div class="text-xs font-bold uppercase tracking-wider text-emerald-100">Jumlah Akhir Bulan</div>
+        <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+          <div>
+            <span class="block text-emerald-200 text-[10px] uppercase font-bold">Total Pendapatan</span>
+            <span class="font-bold text-sm">Rp ${formatIDR(totalPendapatanBulanIni)}</span>
+          </div>
+          <div>
+            <span class="block text-emerald-200 text-[10px] uppercase font-bold">Total Belanja</span>
+            <span class="font-bold text-sm">Rp ${formatIDR(totalBelanjaBulanIni)}</span>
+          </div>
+        </div>
+        <div class="pt-2 border-t border-emerald-500/30 flex justify-between items-center">
+          <span class="text-xs text-emerald-200 font-bold uppercase">Sisa Kas Bersih</span>
+          <span class="text-base font-extrabold text-amber-300">Rp ${formatIDR(totalSisaBulanIni)}</span>
+        </div>
+      `;
+      mobileContainer.appendChild(mSummaryCard);
+    }
+
+    function openTransactionModal(type) {
+      const form = document.getElementById("transaction-form");
+      if (form) form.reset();
+      
+      document.getElementById("tx-id").value = "";
+      document.getElementById("tx-type").value = type;
+      document.getElementById("tx-operator").value = currentSettings.operatorName || "Bendahara";
+
+      const header = document.getElementById("modal-theme-header");
+      const title = document.getElementById("modal-title");
+      const btn = document.getElementById("btn-save-tx");
+
+      if (type === "PENDAPATAN") {
+        header.className = "px-6 py-4 text-white flex justify-between items-center bg-[#00a65a]";
+        title.innerHTML = '<i class="fa-solid fa-plus"></i> Tambah Pendapatan';
+        btn.className = "px-6 py-2.5 bg-[#00a65a] hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5";
+      } else {
+        header.className = "px-6 py-4 text-white flex justify-between items-center bg-[#00c0ef]";
+        title.innerHTML = '<i class="fa-solid fa-minus"></i> Tambah Belanja';
+        btn.className = "px-6 py-2.5 bg-[#00c0ef] hover:bg-sky-600 text-white text-sm font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5";
+      }
+
+      const todayIso = new Date().toISOString().split("T")[0];
+      document.getElementById("tx-date-masehi").value = todayIso;
+      handleFormDateChange();
+
+      const modal = document.getElementById("transaction-modal");
+      modal.classList.remove("hidden");
+      setTimeout(() => modal.classList.add("modal-active"), 10);
+    }
+
+    function closeTransactionModal() {
+      const modal = document.getElementById("transaction-modal");
+      modal.classList.remove("modal-active");
+      setTimeout(() => modal.classList.add("hidden"), 300);
+    }
+
+    function handleFormDateChange() {
+      const dateVal = document.getElementById("tx-date-masehi").value;
+      if (!dateVal) return;
+      
+      const targetDate = new Date(dateVal);
+      const hijri = convertToHijri(targetDate);
+      
+      document.getElementById("tx-date-hijri-preview").innerHTML = `
+        <i class="fa-solid fa-moon text-emerald-600"></i> ${hijri.day} ${hijri.monthName} ${hijri.year} 
+        <span class="text-[10px] text-emerald-700 bg-emerald-100/50 px-2.5 py-0.5 rounded-full font-bold ml-1.5">
+          ${getIndonesianDayName(targetDate)} ${getJavaneseMarketDay(targetDate).toUpperCase()}
+        </span>
+      `;
+    }
+
+    function openEditTransaction(txId) {
+      const tx = currentTransactions.find(t => t.id === txId);
+      if (!tx) {
+        showToast("Error: Transaksi tidak ditemukan di memori.", "error");
+        return;
+      }
+
+      document.getElementById("tx-id").value = tx.id;
+      document.getElementById("tx-type").value = tx.type;
+      
+      const dateMasehiStr = new Date(tx.dateMasehi).toISOString().split("T")[0];
+      document.getElementById("tx-date-masehi").value = dateMasehiStr;
+      
+      document.getElementById("tx-pos").value = tx.pos;
+      document.getElementById("tx-desc").value = tx.description;
+      document.getElementById("tx-amount").value = tx.amount;
+      document.getElementById("tx-operator").value = tx.operator;
+
+      const header = document.getElementById("modal-theme-header");
+      const title = document.getElementById("modal-title");
+      
+      header.className = "px-6 py-4 text-white flex justify-between items-center bg-blue-700";
+      title.innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Transaksi (${tx.type})`;
+
+      handleFormDateChange();
+      const modal = document.getElementById("transaction-modal");
+      modal.classList.remove("hidden");
+      setTimeout(() => modal.classList.add("modal-active"), 10);
+    }
+
+    function saveTransaction(event) {
+      event.preventDefault();
+      
+      const id = document.getElementById("tx-id").value;
+      const type = document.getElementById("tx-type").value;
+      const dateMasehi = document.getElementById("tx-date-masehi").value;
+      const pos = document.getElementById("tx-pos").value;
+      const description = document.getElementById("tx-desc").value;
+      const amount = parseFloat(document.getElementById("tx-amount").value);
+      const operator = document.getElementById("tx-operator").value;
+
+      const targetDate = new Date(dateMasehi);
+      const hijri = convertToHijri(targetDate);
+
+      const txPayload = {
+        dateMasehi: dateMasehi,
+        dateHijri: hijri.formatted,
+        hYear: hijri.year,
+        hMonth: hijri.monthNum,
+        pos: pos,
+        description: description,
+        type: type,
+        amount: amount,
+        operator: operator
+      };
+
+      const btnSave = document.getElementById("btn-save-tx");
+      btnSave.disabled = true;
+      btnSave.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Menyimpan...';
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        if (id) {
+          google.script.run
+            .withSuccessHandler(res => {
+              btnSave.disabled = false;
+              btnSave.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan';
+              if (res.success) {
+                showToast("Transaksi berhasil diperbarui!");
+                closeTransactionModal();
+                loadData();
+              } else {
+                showToast("Gagal memperbarui: " + res.error, "error");
+              }
+            })
+            .updateTransaction(id, txPayload);
+        } else {
+          google.script.run
+            .withSuccessHandler(res => {
+              btnSave.disabled = false;
+              btnSave.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan';
+              if (res.success) {
+                showToast("Transaksi berhasil disimpan!");
+                closeTransactionModal();
+                loadData();
+              } else {
+                showToast("Gagal menyimpan: " + res.error, "error");
+              }
+            })
+            .addTransaction(txPayload);
+        }
+      } else {
+        setTimeout(() => {
+          btnSave.disabled = false;
+          btnSave.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan';
+          showToast("Simulasi Lokal: Transaksi berhasil disimpan!");
+          closeTransactionModal();
+        }, 500);
+      }
+    }
+
+    function deleteTransaction(id) {
+      showConfirm(
+        "Hapus Transaksi",
+        "Apakah Anda yakin ingin menghapus transaksi ini secara permanen?",
+        function() {
+          showToast("Menghapus transaksi...", "info");
+          if (typeof google !== 'undefined' && google.script && google.script.run) {
+            google.script.run
+              .withSuccessHandler(res => {
+                if (res.success) {
+                  showToast("Transaksi telah terhapus!");
+                  loadData();
+                } else {
+                  showToast("Gagal menghapus: " + res.error, "error");
+                }
+              })
+              .deleteTransaction(id);
+          } else {
+            showToast("Simulasi Lokal: Transaksi terhapus.");
+          }
+        },
+        "Ya, Hapus",
+        true
+      );
+    }
+
+    function openSettingsModal() {
+      document.getElementById("settings-logo-file").value = "";
+      base64LogoData = "";
+      
+      document.getElementById("settings-logo-preview").src = currentSettings.logoUrl || "https://placehold.co/150x150/0ea755/ffffff?text=MMU+B44";
+      document.getElementById("settings-madrasah-name").value = currentSettings.madrasahName || "Madrasah Miftahul Ulum B44";
+      document.getElementById("settings-operator-name").value = currentSettings.operatorName || "MUH. FAUZAN AZHIMA AZ";
+      document.getElementById("settings-username").value = currentSettings.username || "admin";
+      document.getElementById("settings-password").value = currentSettings.password || "mmuB44";
+      document.getElementById("settings-academic-year").value = currentSettings.academicYear || "1447/1448";
+      
+      const ssUrl = document.getElementById("settings-ss-url");
+      if (ssUrl) ssUrl.value = document.getElementById("spreadsheet-link").href;
+
+      const modal = document.getElementById("settings-modal");
+      modal.classList.remove("hidden");
+      setTimeout(() => modal.classList.add("modal-active"), 10);
+    }
+
+    function closeSettingsModal() {
+      const modal = document.getElementById("settings-modal");
+      modal.classList.remove("modal-active");
+      setTimeout(() => modal.classList.add("hidden"), 300);
+    }
+
+    function previewAndConvertLogo() {
+      const fileInput = document.getElementById("settings-logo-file");
+      const preview = document.getElementById("settings-logo-preview");
+      
+      if (fileInput.files && fileInput.files[0]) {
+        const file = fileInput.files[0];
+        
+        if (file.size > 1024 * 1024) {
+          showToast("Berkas terlalu besar! Maksimal adalah 1MB.", "error");
+          fileInput.value = "";
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preview.src = e.target.result;
+          base64LogoData = e.target.result;
+        }
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function saveSettings(event) {
+      event.preventDefault();
+
+      const btnSave = document.getElementById("btn-save-settings");
+      btnSave.disabled = true;
+      btnSave.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Menyimpan...';
+
+      const payload = {
+        madrasahName: document.getElementById("settings-madrasah-name").value,
+        operatorName: document.getElementById("settings-operator-name").value,
+        username: document.getElementById("settings-username").value,
+        password: document.getElementById("settings-password").value,
+        academicYear: document.getElementById("settings-academic-year").value
+      };
+
+      if (base64LogoData) {
+        payload.logoUrl = base64LogoData;
+      }
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(res => {
+            btnSave.disabled = false;
+            btnSave.innerHTML = '<i class="fa-solid fa-floppy-disk text-emerald-400"></i> Simpan';
+            if (res.success) {
+              showToast("Pengaturan berhasil disimpan!");
+              closeSettingsModal();
+              loadData();
+            } else {
+              showToast("Gagal memperbarui pengaturan: " + res.error, "error");
+            }
+          })
+          .updateSettings(payload);
+      } else {
+        setTimeout(() => {
+          btnSave.disabled = false;
+          btnSave.innerHTML = '<i class="fa-solid fa-floppy-disk text-emerald-400"></i> Simpan';
+          showToast("Simulasi Lokal: Pengaturan diperbarui!");
+          currentSettings.madrasahName = payload.madrasahName;
+          currentSettings.operatorName = payload.operatorName;
+          currentSettings.username = payload.username;
+          currentSettings.password = payload.password;
+          currentSettings.academicYear = payload.academicYear;
+          if (base64LogoData) currentSettings.logoUrl = base64LogoData;
+          onDataLoaded({ success: true, settings: currentSettings, transactions: currentTransactions, previousBalance, spreadsheetUrl: "#" });
+          closeSettingsModal();
+        }, 500);
+      }
+    }
+
+    function printMonthly() {
+      document.getElementById("print-logo").src = currentSettings.logoUrl || "https://placehold.co/150x150/0ea755/ffffff?text=MMU+B44";
+      document.getElementById("print-madrasah-title").innerText = currentSettings.madrasahName.toUpperCase();
+      document.getElementById("print-h-year").innerText = selectedYear;
+      document.getElementById("print-h-month").innerText = hijriMonths[selectedMonth - 1] || "Muharram";
+      document.getElementById("print-operator-name").innerText = currentSettings.operatorName;
+      
+      const now = new Date();
+      document.querySelector(".print-masehi-now").innerText = now.toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      });
+
+      const printTable = document.getElementById("print-table");
+      
+      let clonedMarkup = `
+        <thead>
+          <tr class="bg-slate-200 text-black font-bold uppercase text-xs border border-slate-700">
+            <th class="py-2 px-3 border border-slate-700 text-center">Tanggal</th>
+            <th class="py-2 px-3 border border-slate-700 text-left">Pos</th>
+            <th class="py-2 px-3 border border-slate-700 text-left">Uraian</th>
+            <th class="py-2 px-3 border border-slate-700 text-right">Pendapatan</th>
+            <th class="py-2 px-3 border border-slate-700 text-right">Belanja</th>
+            <th class="py-2 px-3 border border-slate-700 text-right">Sisa</th>
+          </tr>
+        </thead>
+        <tbody>
+      `;
+
+      const rows = document.querySelectorAll("#ledger-body-desktop tr");
+      rows.forEach(row => {
+        const cells = row.querySelectorAll("td");
+        if (cells.length >= 6) {
+          let tglHTML = cells[0].querySelector(".font-bold") ? cells[0].querySelector(".font-bold").innerText : cells[0].innerText;
+          let posText = cells[1].innerText;
+          let descText = cells[2].innerText;
+          let inText = cells[3].innerText;
+          let outText = cells[4].innerText;
+          let balText = cells[5].innerText;
+
+          clonedMarkup += `
+            <tr class="border border-slate-700">
+              <td class="py-2 px-3 border border-slate-700 text-center">${tglHTML}</td>
+              <td class="py-2 px-3 border border-slate-700 text-left">${posText}</td>
+              <td class="py-2 px-3 border border-slate-700 text-left">${descText}</td>
+              <td class="py-2 px-3 border border-slate-700 text-right">${inText}</td>
+              <td class="py-2 px-3 border border-slate-700 text-right">${outText}</td>
+              <td class="py-2 px-3 border border-slate-700 text-right">${balText}</td>
+            </tr>
+          `;
+        }
+      });
+
+      clonedMarkup += "</tbody>";
+      printTable.innerHTML = clonedMarkup;
+
+      window.print();
+    }
+
+    function openRekapModal() {
+      document.getElementById("rekap-target-year").innerText = selectedYear;
+      const tbody = document.getElementById("rekap-table-body");
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" class="py-8 text-center text-gray-500">
+            <i class="fa-solid fa-circle-notch fa-spin text-xl text-emerald-600 mr-2"></i> Mengompilasi ringkasan tahunan...
+          </td>
+        </tr>
+      `;
+      
+      const modal = document.getElementById("rekap-modal");
+      modal.classList.remove("hidden");
+      setTimeout(() => modal.classList.add("modal-active"), 10);
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(onRekapLoaded)
+          .withFailureHandler(() => {
+            tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-red-600">Gagal mengompilasi rekap tahunan.</td></tr>`;
+          })
+          .getYearlySummary(selectedYear);
+      } else {
+        setTimeout(() => {
+          onRekapLoaded({
+            success: true,
+            initialBalance: 0,
+            monthsSummary: Array(12).fill(null).map((_, i) => ({
+              pendapatan: i === 0 ? 0 : 0,
+              belanja: i === 0 ? 0 : 0
+            }))
+          });
+        }, 600);
+      }
+    }
+
+    function onRekapLoaded(res) {
+      if (!res || !res.success) {
+        showToast("Gagal mengambil data rekap: " + (res ? res.error : "No data"), "error");
+        return;
+      }
+
+      const tbody = document.getElementById("rekap-table-body");
+      tbody.innerHTML = "";
+
+      let currentRunningBalance = res.initialBalance;
+
+      const startTr = document.createElement("tr");
+      startTr.className = "bg-gray-50 font-semibold";
+      startTr.innerHTML = `
+        <td class="py-3 px-4 text-slate-800">Saldo Awal Tahun (${selectedYear})</td>
+        <td class="py-3 px-4 text-right text-emerald-600">-</td>
+        <td class="py-3 px-4 text-right text-sky-600">-</td>
+        <td class="py-3 px-4 text-right text-slate-950 font-bold">${formatIDR(res.initialBalance)}</td>
+      `;
+      tbody.appendChild(startTr);
+
+      let totalInYear = 0;
+      let totalOutYear = 0;
+
+      res.monthsSummary.forEach((sum, idx) => {
+        totalInYear += sum.pendapatan;
+        totalOutYear += sum.belanja;
+        currentRunningBalance = currentRunningBalance + sum.pendapatan - sum.belanja;
+
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-gray-50/50";
+        tr.innerHTML = `
+          <td class="py-2.5 px-4 font-semibold text-gray-800">${idx + 1}. ${hijriMonths[idx]}</td>
+          <td class="py-2.5 px-4 text-right text-emerald-600">${formatIDR(sum.pendapatan)}</td>
+          <td class="py-2.5 px-4 text-right text-sky-600">${formatIDR(sum.belanja)}</td>
+          <td class="py-2.5 px-4 text-right text-slate-900 font-bold bg-amber-50/10">${formatIDR(currentRunningBalance)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const endTr = document.createElement("tr");
+      endTr.className = "bg-gray-100 font-extrabold text-sm border-t border-gray-300";
+      endTr.innerHTML = `
+        <td class="py-3 px-4 uppercase text-slate-900">JUMLAH REKAPITULASI</td>
+        <td class="py-3 px-4 text-right text-[#00a65a]">${formatIDR(totalInYear)}</td>
+        <td class="py-3 px-4 text-right text-[#00c0ef]">${formatIDR(totalOutYear)}</td>
+        <td class="py-3 px-4 text-right text-slate-950">${formatIDR(currentRunningBalance)}</td>
+      `;
+      tbody.appendChild(endTr);
+    }
+
+    function printRekapTahunan() {
+      document.getElementById("rekap-modal").classList.add("no-print");
+
+      document.getElementById("print-logo").src = currentSettings.logoUrl || "https://placehold.co/150x150/0ea755/ffffff?text=MMU+B44";
+      document.getElementById("print-madrasah-title").innerText = currentSettings.madrasahName.toUpperCase();
+      document.getElementById("print-h-year").innerText = selectedYear;
+      document.getElementById("print-h-month").innerText = "1 TAHUN PENUH";
+      document.getElementById("print-operator-name").innerText = currentSettings.operatorName;
+      
+      const now = new Date();
+      document.querySelector(".print-masehi-now").innerText = now.toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      });
+
+      const printTable = document.getElementById("print-table");
+      
+      let clonedMarkup = `
+        <thead>
+          <tr class="bg-slate-200 text-black font-bold uppercase text-xs border border-slate-700">
+            <th class="py-2 px-3 border border-slate-700 text-left">Bulan Hijriah</th>
+            <th class="py-2 px-3 border border-slate-700 text-right">Total Pendapatan</th>
+            <th class="py-2 px-3 border border-slate-700 text-right">Total Belanja</th>
+            <th class="py-2 px-3 border border-slate-700 text-right">Sisa Saldo</th>
+          </tr>
+        </thead>
+        <tbody>
+      `;
+
+      const rows = document.querySelectorAll("#rekap-table-body tr");
+      rows.forEach(row => {
+        const cells = row.querySelectorAll("td");
+        if (cells.length >= 4) {
+          clonedMarkup += `
+            <tr class="border border-slate-700">
+              <td class="py-2 px-3 border border-slate-700 text-left font-semibold">${cells[0].innerText}</td>
+              <td class="py-2 px-3 border border-slate-700 text-right text-emerald-700">${cells[1].innerText}</td>
+              <td class="py-2 px-3 border border-slate-700 text-right text-sky-700">${cells[2].innerText}</td>
+              <td class="py-2 px-3 border border-slate-700 text-right font-bold text-black">${cells[3].innerText}</td>
+            </tr>
+          `;
+        }
+      });
+
+      clonedMarkup += "</tbody>";
+      printTable.innerHTML = clonedMarkup;
+
+      window.print();
+
+      document.getElementById("rekap-modal").classList.remove("no-print");
+    }
+
+    function closeRekapModal() {
+      const modal = document.getElementById("rekap-modal");
+      modal.classList.remove("modal-active");
+      setTimeout(() => modal.classList.add("hidden"), 300);
+    }
+
+    window.onload = function() {
+      try {
+        // Daftarkan global error listener seawal mungkin
+        window.onerror = function(message, source, lineno, colno, error) {
+          const errorDiv = document.getElementById("safe-error-fallback");
+          const mainCard = document.getElementById("main-ledger-card");
+          const skeleton = document.getElementById("table-skeleton");
+          
+          if (errorDiv) {
+            errorDiv.classList.remove("hidden");
+            const traceEl = document.getElementById("error-fallback-trace");
+            if (traceEl) traceEl.innerText = `${message}\nLine: ${lineno}:${colno}\nSource: ${source}`;
+          }
+          if (mainCard) mainCard.classList.add("opacity-50");
+          if (skeleton) skeleton.classList.add("hidden");
+          
+          const appDashboard = document.getElementById("app-dashboard");
+          if (appDashboard) {
+            appDashboard.classList.remove("hidden", "dashboard-hidden");
+            appDashboard.classList.add("dashboard-visible");
+          }
+          return false;
+        };
+
+        updateHeaderWidgets();
+
+        const cachedLogo = SafeStorage.getLocal("mmu_b44_cached_logo");
+        if (cachedLogo) {
+          const logoPreview = document.getElementById("login-logo-preview");
+          if (logoPreview) logoPreview.src = cachedLogo;
+        }
+        
+        if (SafeStorage.getItem("isLoggedIn") === "true") {
+          bypassLogin();
+        }
+
+        // Reusable Custom Confirm Event Listeners
+        const cancelBtn = document.getElementById("confirm-cancel-btn");
+        if (cancelBtn) cancelBtn.onclick = closeConfirm;
+        
+        const okBtn = document.getElementById("confirm-ok-btn");
+        if (okBtn) {
+          okBtn.onclick = function() {
+            if (confirmCallback) confirmCallback();
+            closeConfirm();
+          };
+        }
+      } catch (e) {
+        console.error("Inisialisasi sistem gagal:", e);
+        const errorDiv = document.getElementById("safe-error-fallback");
+        if (errorDiv) errorDiv.classList.remove("hidden");
+        const appDashboard = document.getElementById("app-dashboard");
+        if (appDashboard) {
+          appDashboard.classList.remove("hidden");
+          appDashboard.classList.add("dashboard-visible");
+        }
+      }
+    }
+  </script>
+</body>
+</html>
