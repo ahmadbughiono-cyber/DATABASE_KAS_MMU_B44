@@ -10,7 +10,7 @@
   <!-- Google Font Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://script.google.com/macros/s/AKfycbxjLz8BYQ1gt-stbkeUUZIKB7axES4OILaI-u0AW3uz40OSB2MpfRZIeRM2I-A4wJEU/exec/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
     body {
@@ -174,14 +174,19 @@
         </button>
         <div class="flex items-center gap-2">
           <img id="header-logo" src="https://placehold.co/150x150/0ea755/ffffff?text=MMU+B44" alt="Logo Madrasah" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-white object-cover bg-white shadow-inner">
-          <h1 id="header-app-title" class="font-bold text-base sm:text-lg tracking-wide">KAS MMU B44</h1>
+          <div class="flex flex-col leading-none">
+            <h1 id="header-app-title" class="font-bold text-sm sm:text-base tracking-wide flex items-center gap-1.5">
+              <span>KAS MMU B44</span>
+              <span id="storage-mode-indicator" class="hidden sm:inline-flex"></span>
+            </h1>
+          </div>
         </div>
       </div>
 
       <!-- Widget Header Sisi Kanan: Tanggal Hijriah + Pasaran Jawa + Kwartal -->
       <div class="flex items-center gap-2 sm:gap-4">
         <div class="hidden lg:flex flex-col text-right leading-tight">
-          <span id="widget-hijri-date" class="bg-amber-500 text-slate-900 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full inline-block">Memuat Tanggal...</span>
+          <span id="widget-hijri-date" class="bg-amber-500 text-slate-900 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full inline-block font-mono">Memuat Tanggal...</span>
           <span id="widget-javanese-day" class="text-emerald-100 text-[10px] font-bold uppercase mt-0.5">...</span>
         </div>
         
@@ -267,7 +272,7 @@
               <option value="1450">1450</option>
             </select>
 
-            <select id="filter-month" onchange="loadData()" class="bg-white border border-gray-300 text-gray-700 text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 p-2.5 shadow-sm font-semibold">
+            <select id="filter-month" onchange="loadData()" class="bg-white border border-gray-300 text-gray-700 text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 p-2.5 shadow-sm font-semibold font-mono">
               <option value="1">1. Muharram</option>
               <option value="2">2. Safar</option>
               <option value="3">3. Rabi'al-Awwal</option>
@@ -305,7 +310,7 @@
 
         <div id="table-skeleton" class="py-12 text-center">
           <i class="fa-solid fa-circle-notch fa-spin text-4xl text-emerald-600 mb-3"></i>
-          <p class="text-sm text-gray-500 font-semibold">Menghubungkan ke Google Sheets...</p>
+          <p class="text-sm text-gray-500 font-semibold">Menghubungkan ke Database Kas...</p>
         </div>
 
         <!-- VIEW 1: DESKTOP TABLE VIEW -->
@@ -388,7 +393,7 @@
       </div>
 
       <div class="p-4 border-t border-slate-800 bg-slate-900 text-xs text-center text-slate-500">
-        <p class="font-semibold">Versi Aplikasi 4.6 (Stable Production)</p>
+        <p class="font-semibold">Versi Aplikasi 4.8 (Stable Production)</p>
         <p class="mt-1">&copy; 2026 Kas MMU B44</p>
       </div>
     </aside>
@@ -413,12 +418,12 @@
     <div class="mt-12 grid grid-cols-2 text-center gap-12 text-sm">
       <div>
         <p>Mengetahui,</p>
-        <p class="font-bold mb-16">Kepala Madrasah</p>
+        <p class="font-bold mb-16 font-sans">Kepala Madrasah</p>
         <p class="underline font-bold">.........................................</p>
       </div>
       <div>
         <p>Pasuruan, <span class="print-masehi-now"></span></p>
-        <p class="font-bold mb-16">Bendahara Madrasah</p>
+        <p class="font-bold mb-16 font-sans">Bendahara Madrasah</p>
         <p id="print-operator-name" class="underline font-bold">...</p>
       </div>
     </div>
@@ -451,7 +456,7 @@
 
         <div class="bg-emerald-50/50 border border-emerald-100 rounded-xl p-3">
           <span class="block text-[10px] font-extrabold text-emerald-800 uppercase tracking-wider mb-1">Hasil Konversi Hijriah & Jawa</span>
-          <p id="tx-date-hijri-preview" class="font-bold text-xs sm:text-sm text-emerald-950 flex items-center flex-wrap gap-1.5">
+          <p id="tx-date-hijri-preview" class="font-bold text-xs sm:text-sm text-emerald-950 flex items-center flex-wrap gap-1.5 font-mono">
             <i class="fa-solid fa-moon text-emerald-600"></i> Memilih tanggal...
           </p>
         </div>
@@ -498,7 +503,6 @@
         </div>
 
         <div class="flex justify-between items-center pt-4 border-t border-gray-100">
-          <!-- Tombol Hapus yang hanya muncul saat mengedit transaksi -->
           <button type="button" id="btn-modal-delete" onclick="handleModalDelete()" class="px-4 py-2.5 bg-red-100 hover:bg-red-200 text-red-700 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center gap-1.5 hidden">
             <i class="fa-solid fa-trash-can"></i> Hapus Transaksi
           </button>
@@ -536,6 +540,20 @@
               <p class="text-[9px] text-gray-400 mt-1">Format gambar (Maksimal 1MB).</p>
             </div>
           </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Mode Penyimpanan Basis Data</label>
+          <select id="settings-storage-mode" class="w-full bg-slate-50 border border-gray-300 text-gray-900 text-sm font-bold rounded-xl focus:ring-emerald-500 focus:border-emerald-500 p-3 shadow-sm">
+            <option value="sheets">Google Sheets (Multi-Device Awan)</option>
+            <option value="local">Lokal Browser (Offline di HP/PC Ini)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">URL Web App Apps Script (Sinkronisasi Eksternal)</label>
+          <input type="url" id="settings-external-webapp-url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-xl focus:ring-emerald-500 focus:border-emerald-500 block p-3 shadow-sm font-semibold font-mono">
+          <p class="text-[10px] text-gray-400 mt-1">Gunakan URL Web App Apps Script Anda di sini agar aplikasi dapat mensinkronkan data langsung dengan Google Sheets meskipun dijalankan dari platform eksternal.</p>
         </div>
 
         <div>
@@ -627,7 +645,7 @@
     </div>
   </div>
 
-  <!-- MODAL: CUSTOM ALERT/CONFIRM DIALOG (Defensive interaction target) -->
+  <!-- MODAL: CUSTOM ALERT/CONFIRM DIALOG -->
   <div id="custom-confirm-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden no-print">
     <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 border border-gray-100 transform transition-all scale-95 opacity-0 duration-200" id="confirm-modal-content">
       <div class="text-center">
@@ -690,6 +708,345 @@
           console.warn("Local storage diblokir browser, menyimpan di RAM virtual.", e);
           this._memory["local_" + key] = value;
         }
+      }
+    };
+
+    /**
+     * UNIFIED DATABASE DRIVER (Dual-Engine Mode with External API Sync Bridge)
+     * Abstraksi data kas: Mendukung Google Sheets, API Sinkronisasi Eksternal, & LocalStorage Browser.
+     */
+    const isNativeGas = (typeof google !== 'undefined' && google.script && google.script.run);
+
+    async function callExternalApi(action, payload) {
+      const webAppUrl = SafeStorage.getLocal("mmu_b44_external_webapp_url") || (currentSettings && currentSettings.externalWebAppUrl);
+      if (!webAppUrl) {
+        throw new Error("URL Web App Apps Script belum terkonfigurasi di Pengaturan.");
+      }
+      try {
+        const bodyPayload = { action: action, ...payload };
+        // Menggunakan text/plain untuk bypass preflight OPTIONS CORS
+        const response = await fetch(webAppUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain"
+          },
+          body: JSON.stringify(bodyPayload)
+        });
+        const data = await response.json();
+        return data;
+      } catch (err) {
+        console.error("Kesalahan API Eksternal:", err);
+        throw err;
+      }
+    }
+
+    const DbDriver = {
+      getMode() {
+        const savedMode = SafeStorage.getLocal("mmu_b44_storage_mode");
+        if (savedMode) return savedMode;
+        return isNativeGas ? "sheets" : "local";
+      },
+      setMode(mode) {
+        SafeStorage.setLocal("mmu_b44_storage_mode", mode);
+      },
+      verifyCredentials(username, password, callback) {
+        const mode = this.getMode();
+        if (mode === "sheets") {
+          if (isNativeGas) {
+            google.script.run
+              .withSuccessHandler(callback)
+              .withFailureHandler(err => callback({ success: false, error: err.toString() }))
+              .verifyCredentials(username, password);
+          } else {
+            callExternalApi("verifyCredentials", { username, password })
+              .then(callback)
+              .catch(err => callback({ success: false, error: err.message }));
+          }
+        } else {
+          setTimeout(() => {
+            const settings = this.localGetSettings();
+            const inpUser = username.toString().trim().toLowerCase();
+            const inpPass = password.toString().trim();
+            const dbUser = settings.username.toString().trim().toLowerCase();
+            const dbPass = settings.password.toString().trim();
+            
+            if (inpUser === dbUser && inpPass === dbPass) {
+              callback({ success: true });
+            } else {
+              callback({ success: false, error: "Username atau Password salah!" });
+            }
+          }, 300);
+        }
+      },
+      getAppData(year, month, successCallback, failureCallback) {
+        const mode = this.getMode();
+        if (mode === "sheets") {
+          if (isNativeGas) {
+            google.script.run
+              .withSuccessHandler(successCallback)
+              .withFailureHandler(failureCallback)
+              .getAppData(year, month);
+          } else {
+            callExternalApi("getAppData", { year: year, month: month })
+              .then(successCallback)
+              .catch(failureCallback);
+          }
+        } else {
+          setTimeout(() => {
+            try {
+              const settings = this.localGetSettings();
+              const allTransactions = this.localGetTransactions();
+              
+              let previousBalance = 0;
+              const currentMonthTransactions = [];
+              
+              allTransactions.forEach(tx => {
+                const hYear = parseInt(tx.hYear, 10);
+                const hMonth = parseInt(tx.hMonth, 10);
+                const amount = parseFloat(tx.amount) || 0;
+                
+                if (hYear < year || (hYear === year && hMonth < month)) {
+                  if (tx.type === "PENDAPATAN") {
+                    previousBalance += amount;
+                  } else if (tx.type === "BELANJA") {
+                    previousBalance -= amount;
+                  }
+                } else if (hYear === year && hMonth === month) {
+                  currentMonthTransactions.push(tx);
+                }
+              });
+              
+              currentMonthTransactions.sort((a, b) => new Date(a.dateMasehi) - new Date(b.dateMasehi));
+              
+              successCallback({
+                success: true,
+                settings: settings,
+                transactions: currentMonthTransactions,
+                previousBalance: previousBalance,
+                spreadsheetUrl: "#"
+              });
+            } catch (e) {
+              failureCallback(e);
+            }
+          }, 450);
+        }
+      },
+      addTransaction(data, callback) {
+        const mode = this.getMode();
+        if (mode === "sheets") {
+          if (isNativeGas) {
+            google.script.run
+              .withSuccessHandler(callback)
+              .withFailureHandler(err => callback({ success: false, error: err.toString() }))
+              .addTransaction(data);
+          } else {
+            callExternalApi("addTransaction", { data: data })
+              .then(callback)
+              .catch(err => callback({ success: false, error: err.message }));
+          }
+        } else {
+          setTimeout(() => {
+            try {
+              const txs = this.localGetTransactions();
+              const newId = "TX_L_" + new Date().getTime() + "_" + Math.floor(Math.random() * 1000);
+              const payload = {
+                id: newId,
+                dateMasehi: data.dateMasehi,
+                dateHijri: data.dateHijri,
+                hYear: parseInt(data.hYear, 10),
+                hMonth: parseInt(data.hMonth, 10),
+                pos: data.pos,
+                description: data.description,
+                type: data.type,
+                amount: parseFloat(data.amount) || 0,
+                createdAt: new Date().toISOString(),
+                operator: data.operator
+              };
+              txs.push(payload);
+              this.localSaveTransactions(txs);
+              callback({ success: true, id: newId });
+            } catch (e) {
+              callback({ success: false, error: e.toString() });
+            }
+          }, 250);
+        }
+      },
+      updateTransaction(id, data, callback) {
+        const mode = this.getMode();
+        if (mode === "sheets") {
+          if (isNativeGas) {
+            google.script.run
+              .withSuccessHandler(callback)
+              .withFailureHandler(err => callback({ success: false, error: err.toString() }))
+              .updateTransaction(id, data);
+          } else {
+            callExternalApi("updateTransaction", { id: id, data: data })
+              .then(callback)
+              .catch(err => callback({ success: false, error: err.message }));
+          }
+        } else {
+          setTimeout(() => {
+            try {
+              const txs = this.localGetTransactions();
+              const idx = txs.findIndex(t => t.id === id);
+              if (idx !== -1) {
+                txs[idx] = {
+                  ...txs[idx],
+                  dateMasehi: data.dateMasehi,
+                  dateHijri: data.dateHijri,
+                  hYear: parseInt(data.hYear, 10),
+                  hMonth: parseInt(data.hMonth, 10),
+                  pos: data.pos,
+                  description: data.description,
+                  type: data.type,
+                  amount: parseFloat(data.amount) || 0,
+                  operator: data.operator
+                };
+                this.localSaveTransactions(txs);
+                callback({ success: true });
+              } else {
+                callback({ success: false, error: "Transaksi lokal tidak ditemukan." });
+              }
+            } catch (e) {
+              callback({ success: false, error: e.toString() });
+            }
+          }, 250);
+        }
+      },
+      deleteTransaction(id, callback) {
+        const mode = this.getMode();
+        if (mode === "sheets") {
+          if (isNativeGas) {
+            google.script.run
+              .withSuccessHandler(callback)
+              .withFailureHandler(err => callback({ success: false, error: err.toString() }))
+              .deleteTransaction(id);
+          } else {
+            callExternalApi("deleteTransaction", { id: id })
+              .then(callback)
+              .catch(err => callback({ success: false, error: err.message }));
+          }
+        } else {
+          setTimeout(() => {
+            try {
+              let txs = this.localGetTransactions();
+              const initLength = txs.length;
+              txs = txs.filter(t => t.id !== id);
+              if (txs.length < initLength) {
+                this.localSaveTransactions(txs);
+                callback({ success: true });
+              } else {
+                callback({ success: false, error: "Transaksi gagal dihapus." });
+              }
+            } catch (e) {
+              callback({ success: false, error: e.toString() });
+            }
+          }, 250);
+        }
+      },
+      updateSettings(settings, callback) {
+        const mode = this.getMode();
+        if (mode === "sheets") {
+          if (isNativeGas) {
+            google.script.run
+              .withSuccessHandler(callback)
+              .withFailureHandler(err => callback({ success: false, error: err.toString() }))
+              .updateSettings(settings);
+          } else {
+            callExternalApi("updateSettings", { settings: settings })
+              .then(callback)
+              .catch(err => callback({ success: false, error: err.message }));
+          }
+        } else {
+          setTimeout(() => {
+            try {
+              const current = this.localGetSettings();
+              const merged = { ...current, ...settings };
+              this.localSaveSettings(merged);
+              callback({ success: true });
+            } catch (e) {
+              callback({ success: false, error: e.toString() });
+            }
+          }, 250);
+        }
+      },
+      getYearlySummary(year, successCallback, failureCallback) {
+        const mode = this.getMode();
+        if (mode === "sheets") {
+          if (isNativeGas) {
+            google.script.run
+              .withSuccessHandler(successCallback)
+              .withFailureHandler(failureCallback)
+              .getYearlySummary(year);
+          } else {
+            callExternalApi("getYearlySummary", { year: year })
+              .then(successCallback)
+              .catch(failureCallback);
+          }
+        } else {
+          setTimeout(() => {
+            try {
+              const txs = this.localGetTransactions();
+              const monthsSummary = Array(12).fill(null).map(() => ({ pendapatan: 0, belanja: 0 }));
+              let initialBalance = 0;
+              const targetYear = parseInt(year, 10);
+              
+              txs.forEach(tx => {
+                const hYear = parseInt(tx.hYear, 10);
+                const hMonth = parseInt(tx.hMonth, 10);
+                const amount = parseFloat(tx.amount) || 0;
+                
+                if (hYear < targetYear) {
+                  if (tx.type === "PENDAPATAN") initialBalance += amount;
+                  else if (tx.type === "BELANJA") initialBalance -= amount;
+                } else if (hYear === targetYear) {
+                  if (hMonth >= 1 && hMonth <= 12) {
+                    if (tx.type === "PENDAPATAN") {
+                      monthsSummary[hMonth - 1].pendapatan += amount;
+                    } else if (tx.type === "BELANJA") {
+                      monthsSummary[hMonth - 1].belanja += amount;
+                    }
+                  }
+                }
+              });
+              
+              successCallback({
+                success: true,
+                initialBalance: initialBalance,
+                monthsSummary: monthsSummary
+              });
+            } catch (e) {
+              failureCallback(e);
+            }
+          }, 350);
+        }
+      },
+      localGetSettings() {
+        try {
+          const raw = SafeStorage.getLocal("mmu_b44_local_settings");
+          if (raw) return JSON.parse(raw);
+        } catch (e) {}
+        return {
+          logoUrl: "https://placehold.co/150x150/0ea755/ffffff?text=MMU+B44",
+          madrasahName: "Madrasah Miftahul Ulum B44",
+          operatorName: "MUH. FAUZAN AZHIMA AZ",
+          academicYear: "1447/1448",
+          username: "admin",
+          password: "mmuB44"
+        };
+      },
+      localSaveSettings(settings) {
+        SafeStorage.setLocal("mmu_b44_local_settings", JSON.stringify(settings));
+      },
+      localGetTransactions() {
+        try {
+          const raw = SafeStorage.getLocal("mmu_b44_local_transactions");
+          if (raw) return JSON.parse(raw);
+        } catch (e) {}
+        return [];
+      },
+      localSaveTransactions(transactions) {
+        SafeStorage.setLocal("mmu_b44_local_transactions", JSON.stringify(transactions));
       }
     };
 
@@ -905,6 +1262,22 @@
       }
     }
 
+    function updateStorageIndicator() {
+      const mode = DbDriver.getMode();
+      const indicator = document.getElementById("storage-mode-indicator");
+      if (!indicator) return;
+      
+      if (mode === "sheets") {
+        indicator.className = "bg-emerald-700 text-emerald-100 text-[9px] px-2.5 py-0.5 rounded-full font-bold select-none inline-flex items-center gap-1 border border-emerald-500";
+        indicator.innerHTML = '<i class="fa-solid fa-cloud"></i> Awan Google Sheets';
+        indicator.title = "Mode Sinkronisasi Cloud Google Sheets Aktif";
+      } else {
+        indicator.className = "bg-amber-600 text-amber-50 text-[9px] px-2.5 py-0.5 rounded-full font-bold select-none inline-flex items-center gap-1 border border-amber-400";
+        indicator.innerHTML = '<i class="fa-solid fa-laptop-code"></i> Lokal Browser';
+        indicator.title = "Mode Offline: Data Disimpan di Memori Internal Browser HP/PC Ini";
+      }
+    }
+
     function togglePasswordVisibility(fieldId, button) {
       const field = document.getElementById(fieldId);
       const icon = button.querySelector('i');
@@ -926,39 +1299,18 @@
       btn.disabled = true;
       btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Memvalidasi...';
 
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler(res => {
-            btn.disabled = false;
-            btn.innerHTML = 'Masuk Aplikasi <i class="fa-solid fa-right-to-bracket"></i>';
-            if (res && res.success) {
-              SafeStorage.setItem("isLoggedIn", "true");
-              showToast("Autentikasi Berhasil! Selamat datang.");
-              triggerDashboardEntrance();
-            } else {
-              showToast((res && res.error) ? res.error : "Username atau Password salah!", "error");
-            }
-          })
-          .withFailureHandler(err => {
-            btn.disabled = false;
-            btn.innerHTML = 'Masuk Aplikasi <i class="fa-solid fa-right-to-bracket"></i>';
-            showToast("Gagal terhubung ke verifikator server: " + err.toString(), "error");
-          })
-          .verifyCredentials(user, pass);
-      } else {
-        // Simulasi lokal jika offline
-        setTimeout(() => {
-          btn.disabled = false;
-          btn.innerHTML = 'Masuk Aplikasi <i class="fa-solid fa-right-to-bracket"></i>';
-          if (user.trim().toLowerCase() === "admin" && pass.trim() === "mmuB44") {
-            SafeStorage.setItem("isLoggedIn", "true");
-            showToast("Masuk Berhasil! (Offline Mode)");
-            triggerDashboardEntrance();
-          } else {
-            showToast("Username / Password salah!", "error");
-          }
-        }, 600);
-      }
+      DbDriver.verifyCredentials(user, pass, function(res) {
+        btn.disabled = false;
+        btn.innerHTML = 'Masuk Aplikasi <i class="fa-solid fa-right-to-bracket"></i>';
+        
+        if (res && res.success) {
+          SafeStorage.setItem("isLoggedIn", "true");
+          showToast("Autentikasi Berhasil! Membuka Kas MMU B44.");
+          triggerDashboardEntrance();
+        } else {
+          showToast((res && res.error) ? res.error : "Username atau Password salah!", "error");
+        }
+      });
     }
 
     function triggerDashboardEntrance() {
@@ -1081,31 +1433,9 @@
       const mCardView = document.getElementById("mobile-card-view");
       if (mCardView) mCardView.classList.add("opacity-40");
 
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler(onDataLoaded)
-          .withFailureHandler(onDataLoadFailed)
-          .getAppData(selectedYear, selectedMonth);
-      } else {
-        // Mock data jika offline
-        setTimeout(() => {
-          const mockData = {
-            success: true,
-            settings: {
-              logoUrl: "https://placehold.co/150x150/0ea755/ffffff?text=MMU+B44",
-              madrasahName: "Madrasah Miftahul Ulum B44",
-              operatorName: "MUH. FAUZAN AZHIMA AZ",
-              academicYear: "1447/1448",
-              username: "admin",
-              password: "mmuB44"
-            },
-            transactions: [],
-            previousBalance: 11425000,
-            spreadsheetUrl: "#"
-          };
-          onDataLoaded(mockData);
-        }, 800);
-      }
+      updateStorageIndicator();
+
+      DbDriver.getAppData(selectedYear, selectedMonth, onDataLoaded, onDataLoadFailed);
     }
 
     function onDataLoaded(response) {
@@ -1153,7 +1483,14 @@
       SafeStorage.setLocal("mmu_b44_cached_logo", logoUrl);
       
       const ssLink = document.getElementById("spreadsheet-link");
-      if (ssLink) ssLink.href = response.spreadsheetUrl || "#";
+      if (ssLink) {
+        if (response.spreadsheetUrl && response.spreadsheetUrl !== "#") {
+          ssLink.href = response.spreadsheetUrl;
+          ssLink.classList.remove("hidden");
+        } else {
+          ssLink.classList.add("hidden");
+        }
+      }
 
       renderLedgerTable();
     }
@@ -1168,7 +1505,7 @@
       const mCardView = document.getElementById("mobile-card-view");
       if (mCardView) mCardView.classList.remove("opacity-40");
       
-      showToast("Gagal terhubung dengan server: " + err.toString(), "error");
+      showToast("Gagal terhubung dengan database: " + err.toString(), "error");
     }
 
     function renderLedgerTable() {
@@ -1186,7 +1523,7 @@
       const saldoLaluTr = document.createElement("tr");
       saldoLaluTr.className = "bg-gray-50/50 hover:bg-gray-100/50 transition-colors";
       saldoLaluTr.innerHTML = `
-        <td class="py-4 px-4 text-center font-bold text-gray-500">${firstRowDateStr}</td>
+        <td class="py-4 px-4 text-center font-bold text-gray-500 font-mono">${firstRowDateStr}</td>
         <td class="py-4 px-4">-</td>
         <td class="py-4 px-4 font-bold text-slate-800">Saldo Bulan Lalu</td>
         <td class="py-4 px-4 text-right font-bold text-slate-800">${formatIDR(previousBalance)}</td>
@@ -1200,7 +1537,7 @@
       saldoLaluCard.className = "bg-white p-4 rounded-xl border-l-4 border-slate-400 shadow-sm space-y-1";
       saldoLaluCard.innerHTML = `
         <div class="flex justify-between items-center text-xs text-gray-500">
-          <span class="font-bold">${firstRowDateStr}</span>
+          <span class="font-bold font-mono">${firstRowDateStr}</span>
           <span>Sistem Kas</span>
         </div>
         <p class="font-bold text-sm text-slate-800">Saldo Bulan Lalu</p>
@@ -1232,8 +1569,8 @@
         tr.className = "hover:bg-gray-50 transition-colors border-b border-gray-100 group";
         tr.innerHTML = `
           <td class="py-4 px-4 text-center">
-            <div class="font-bold text-gray-800">${cleanHijriDate}</div>
-            <div class="text-[10px] text-gray-400 no-print">${dateObj.toLocaleDateString('id-ID')}</div>
+            <div class="font-bold text-gray-800 font-mono">${cleanHijriDate}</div>
+            <div class="text-[10px] text-gray-400 no-print font-mono">${dateObj.toLocaleDateString('id-ID')}</div>
           </td>
           <td class="py-4 px-4">
             <span class="inline-block bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-full font-semibold max-w-[120px] truncate" title="${tx.pos}">${tx.pos || '-'}</span>
@@ -1266,15 +1603,15 @@
         mCard.innerHTML = `
           <div class="flex justify-between items-start">
             <div>
-              <div class="font-extrabold text-sm text-slate-800">${cleanHijriDate}</div>
-              <div class="text-[9px] text-gray-400 mt-0.5">${dateObj.toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'})}</div>
+              <div class="font-extrabold text-sm text-slate-800 font-mono">${cleanHijriDate}</div>
+              <div class="text-[9px] text-gray-400 mt-0.5 font-mono">${dateObj.toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'})}</div>
             </div>
             <span class="inline-block ${badgeColor} text-[10px] px-2 py-0.5 rounded-full font-bold max-w-[120px] truncate">${tx.pos || 'Tanpa Pos'}</span>
           </div>
 
           <p class="text-xs font-bold text-slate-700 leading-relaxed pr-16">${tx.description}</p>
 
-          <div class="flex justify-between items-center pt-2.5 border-t border-gray-100 text-xs">
+          <div class="flex justify-between items-center pt-2.5 border-t border-gray-100 text-xs font-mono">
             <div>
               <span class="text-[10px] text-gray-400 block uppercase font-bold">Nominal</span>
               <span class="font-extrabold ${textAmountColor} text-sm">${isPendapatan ? '+' : '-'} Rp ${formatIDR(tx.amount)}</span>
@@ -1304,9 +1641,9 @@
       totalTr.className = "bg-gray-100 text-slate-900 border-t-2 border-slate-300 font-extrabold text-xs sm:text-sm";
       totalTr.innerHTML = `
         <td class="py-4 px-4 text-center uppercase" colspan="3">JUMLAH AKHIR BULAN</td>
-        <td class="py-4 px-4 text-right text-slate-900 font-bold">${formatIDR(totalPendapatanBulanIni)}</td>
-        <td class="py-4 px-4 text-right text-slate-900 font-bold">${formatIDR(totalBelanjaBulanIni)}</td>
-        <td class="py-4 px-4 text-right text-slate-900 font-bold">${formatIDR(totalSisaBulanIni)}</td>
+        <td class="py-4 px-4 text-right text-slate-900 font-bold font-mono">${formatIDR(totalPendapatanBulanIni)}</td>
+        <td class="py-4 px-4 text-right text-slate-900 font-bold font-mono">${formatIDR(totalBelanjaBulanIni)}</td>
+        <td class="py-4 px-4 text-right text-slate-900 font-bold font-mono">${formatIDR(totalSisaBulanIni)}</td>
         <td class="py-4 px-3 text-center no-print">-</td>
       `;
       tbodyDesktop.appendChild(totalTr);
@@ -1315,7 +1652,7 @@
       mSummaryCard.className = "bg-[#00a65a] text-white p-4 rounded-xl shadow-md space-y-2 mt-4";
       mSummaryCard.innerHTML = `
         <div class="text-xs font-bold uppercase tracking-wider text-emerald-100">Jumlah Akhir Bulan</div>
-        <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+        <div class="grid grid-cols-2 gap-2 text-xs pt-1 font-mono">
           <div>
             <span class="block text-emerald-200 text-[10px] uppercase font-bold">Total Pendapatan</span>
             <span class="font-bold text-sm">Rp ${formatIDR(totalPendapatanBulanIni)}</span>
@@ -1327,7 +1664,7 @@
         </div>
         <div class="pt-2 border-t border-emerald-500/30 flex justify-between items-center">
           <span class="text-xs text-emerald-200 font-bold uppercase">Sisa Kas Bersih</span>
-          <span class="text-base font-extrabold text-amber-300">Rp ${formatIDR(totalSisaBulanIni)}</span>
+          <span class="text-base font-extrabold text-amber-300 font-mono">Rp ${formatIDR(totalSisaBulanIni)}</span>
         </div>
       `;
       mobileContainer.appendChild(mSummaryCard);
@@ -1399,7 +1736,6 @@
       document.getElementById("tx-id").value = tx.id;
       document.getElementById("tx-type").value = tx.type;
       
-      // Tampilkan tombol hapus bawaan modal saat mengedit transaksi lama
       const btnDelete = document.getElementById("btn-modal-delete");
       if (btnDelete) btnDelete.classList.remove("hidden");
 
@@ -1460,43 +1796,22 @@
       btnSave.disabled = true;
       btnSave.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Menyimpan...';
 
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        if (id) {
-          google.script.run
-            .withSuccessHandler(res => {
-              btnSave.disabled = false;
-              btnSave.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan';
-              if (res.success) {
-                showToast("Transaksi berhasil diperbarui!");
-                closeTransactionModal();
-                loadData();
-              } else {
-                showToast("Gagal memperbarui: " + res.error, "error");
-              }
-            })
-            .updateTransaction(id, txPayload);
-        } else {
-          google.script.run
-            .withSuccessHandler(res => {
-              btnSave.disabled = false;
-              btnSave.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan';
-              if (res.success) {
-                showToast("Transaksi berhasil disimpan!");
-                closeTransactionModal();
-                loadData();
-              } else {
-                showToast("Gagal menyimpan: " + res.error, "error");
-              }
-            })
-            .addTransaction(txPayload);
-        }
-      } else {
-        setTimeout(() => {
-          btnSave.disabled = false;
-          btnSave.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan';
-          showToast("Simulasi Lokal: Transaksi berhasil disimpan!");
+      const saveCallback = function(res) {
+        btnSave.disabled = false;
+        btnSave.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan';
+        if (res && res.success) {
+          showToast("Transaksi berhasil disimpan!");
           closeTransactionModal();
-        }, 500);
+          loadData();
+        } else {
+          showToast("Gagal menyimpan: " + (res ? res.error : "Unknown error"), "error");
+        }
+      };
+
+      if (id) {
+        DbDriver.updateTransaction(id, txPayload, saveCallback);
+      } else {
+        DbDriver.addTransaction(txPayload, saveCallback);
       }
     }
 
@@ -1506,20 +1821,14 @@
         "Apakah Anda yakin ingin menghapus transaksi ini secara permanen dari database?",
         function() {
           showToast("Menghapus transaksi...", "info");
-          if (typeof google !== 'undefined' && google.script && google.script.run) {
-            google.script.run
-              .withSuccessHandler(res => {
-                if (res.success) {
-                  showToast("Transaksi telah terhapus!");
-                  loadData();
-                } else {
-                  showToast("Gagal menghapus: " + res.error, "error");
-                }
-              })
-              .deleteTransaction(id);
-          } else {
-            showToast("Simulasi Lokal: Transaksi terhapus.");
-          }
+          DbDriver.deleteTransaction(id, function(res) {
+            if (res && res.success) {
+              showToast("Transaksi telah terhapus!");
+              loadData();
+            } else {
+              showToast("Gagal menghapus: " + (res ? res.error : "Unknown error"), "error");
+            }
+          });
         },
         "Ya, Hapus",
         true
@@ -1536,6 +1845,11 @@
       document.getElementById("settings-username").value = currentSettings.username || "admin";
       document.getElementById("settings-password").value = currentSettings.password || "mmuB44";
       document.getElementById("settings-academic-year").value = currentSettings.academicYear || "1447/1448";
+      document.getElementById("settings-storage-mode").value = DbDriver.getMode();
+      
+      // Load URL Web App Eksternal dari LocalStorage
+      const savedExtUrl = SafeStorage.getLocal("mmu_b44_external_webapp_url") || currentSettings.externalWebAppUrl || "";
+      document.getElementById("settings-external-webapp-url").value = savedExtUrl;
       
       const ssUrl = document.getElementById("settings-ss-url");
       if (ssUrl) ssUrl.value = document.getElementById("spreadsheet-link").href;
@@ -1580,47 +1894,44 @@
       btnSave.disabled = true;
       btnSave.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Menyimpan...';
 
+      const selectedMode = document.getElementById("settings-storage-mode").value;
+      const extUrl = document.getElementById("settings-external-webapp-url").value.trim();
+      const oldMode = DbDriver.getMode();
+
+      // Simpan URL API eksternal di memori browser lokal
+      SafeStorage.setLocal("mmu_b44_external_webapp_url", extUrl);
+
       const payload = {
         madrasahName: document.getElementById("settings-madrasah-name").value,
         operatorName: document.getElementById("settings-operator-name").value,
         username: document.getElementById("settings-username").value,
         password: document.getElementById("settings-password").value,
-        academicYear: document.getElementById("settings-academic-year").value
+        academicYear: document.getElementById("settings-academic-year").value,
+        externalWebAppUrl: extUrl
       };
 
       if (base64LogoData) {
         payload.logoUrl = base64LogoData;
       }
 
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler(res => {
-            btnSave.disabled = false;
-            btnSave.innerHTML = '<i class="fa-solid fa-floppy-disk text-emerald-400"></i> Simpan';
-            if (res.success) {
-              showToast("Pengaturan berhasil disimpan!");
-              closeSettingsModal();
-              loadData();
-            } else {
-              showToast("Gagal memperbarui pengaturan: " + res.error, "error");
-            }
-          })
-          .updateSettings(payload);
-      } else {
-        setTimeout(() => {
-          btnSave.disabled = false;
-          btnSave.innerHTML = '<i class="fa-solid fa-floppy-disk text-emerald-400"></i> Simpan';
-          showToast("Simulasi Lokal: Pengaturan diperbarui!");
-          currentSettings.madrasahName = payload.madrasahName;
-          currentSettings.operatorName = payload.operatorName;
-          currentSettings.username = payload.username;
-          currentSettings.password = payload.password;
-          currentSettings.academicYear = payload.academicYear;
-          if (base64LogoData) currentSettings.logoUrl = base64LogoData;
-          onDataLoaded({ success: true, settings: currentSettings, transactions: currentTransactions, previousBalance, spreadsheetUrl: "#" });
+      DbDriver.setMode(selectedMode);
+
+      DbDriver.updateSettings(payload, function(res) {
+        btnSave.disabled = false;
+        btnSave.innerHTML = '<i class="fa-solid fa-floppy-disk text-emerald-400"></i> Simpan';
+        
+        if (res && res.success) {
+          showToast("Pengaturan berhasil disimpan!");
           closeSettingsModal();
-        }, 500);
-      }
+          
+          if (oldMode !== selectedMode) {
+            showToast("Mode penyimpanan berubah! Memuat ulang database.", "info");
+          }
+          loadData();
+        } else {
+          showToast("Gagal memperbarui pengaturan: " + (res ? res.error : "Unknown error"), "error");
+        }
+      });
     }
 
     function printMonthly() {
@@ -1666,12 +1977,12 @@
 
           clonedMarkup += `
             <tr class="border border-slate-700">
-              <td class="py-2 px-3 border border-slate-700 text-center">${tglHTML}</td>
+              <td class="py-2 px-3 border border-slate-700 text-center font-mono">${tglHTML}</td>
               <td class="py-2 px-3 border border-slate-700 text-left">${posText}</td>
               <td class="py-2 px-3 border border-slate-700 text-left">${descText}</td>
-              <td class="py-2 px-3 border border-slate-700 text-right">${inText}</td>
-              <td class="py-2 px-3 border border-slate-700 text-right">${outText}</td>
-              <td class="py-2 px-3 border border-slate-700 text-right">${balText}</td>
+              <td class="py-2 px-3 border border-slate-700 text-right font-mono">${inText}</td>
+              <td class="py-2 px-3 border border-slate-700 text-right font-mono">${outText}</td>
+              <td class="py-2 px-3 border border-slate-700 text-right font-mono">${balText}</td>
             </tr>
           `;
         }
@@ -1698,25 +2009,9 @@
       modal.classList.remove("hidden");
       setTimeout(() => modal.classList.add("modal-active"), 10);
 
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler(onRekapLoaded)
-          .withFailureHandler(() => {
-            tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-red-600">Gagal mengompilasi rekap tahunan.</td></tr>`;
-          })
-          .getYearlySummary(selectedYear);
-      } else {
-        setTimeout(() => {
-          onRekapLoaded({
-            success: true,
-            initialBalance: 11425000,
-            monthsSummary: Array(12).fill(null).map((_, i) => ({
-              pendapatan: i === 0 ? 500000 : 0,
-              belanja: i === 0 ? 150000 : 0
-            }))
-          });
-        }, 600);
-      }
+      DbDriver.getYearlySummary(selectedYear, onRekapLoaded, function() {
+        tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-red-600">Gagal mengompilasi rekap tahunan.</td></tr>`;
+      });
     }
 
     function onRekapLoaded(res) {
@@ -1734,9 +2029,9 @@
       startTr.className = "bg-gray-50 font-semibold";
       startTr.innerHTML = `
         <td class="py-3 px-4 text-slate-800">Saldo Awal Tahun (${selectedYear})</td>
-        <td class="py-3 px-4 text-right text-emerald-600">-</td>
-        <td class="py-3 px-4 text-right text-sky-600">-</td>
-        <td class="py-3 px-4 text-right text-slate-950 font-bold">${formatIDR(res.initialBalance)}</td>
+        <td class="py-3 px-4 text-right text-emerald-600 font-mono">-</td>
+        <td class="py-3 px-4 text-right text-sky-600 font-mono">-</td>
+        <td class="py-3 px-4 text-right text-slate-950 font-bold font-mono">${formatIDR(res.initialBalance)}</td>
       `;
       tbody.appendChild(startTr);
 
@@ -1751,10 +2046,10 @@
         const tr = document.createElement("tr");
         tr.className = "hover:bg-gray-50/50";
         tr.innerHTML = `
-          <td class="py-2.5 px-4 font-semibold text-gray-800">${idx + 1}. ${hijriMonths[idx]}</td>
-          <td class="py-2.5 px-4 text-right text-emerald-600">${formatIDR(sum.pendapatan)}</td>
-          <td class="py-2.5 px-4 text-right text-sky-600">${formatIDR(sum.belanja)}</td>
-          <td class="py-2.5 px-4 text-right text-slate-900 font-bold bg-amber-50/10">${formatIDR(currentRunningBalance)}</td>
+          <td class="py-2.5 px-4 font-semibold text-gray-800 font-mono">${idx + 1}. ${hijriMonths[idx]}</td>
+          <td class="py-2.5 px-4 text-right text-emerald-600 font-mono">${formatIDR(sum.pendapatan)}</td>
+          <td class="py-2.5 px-4 text-right text-sky-600 font-mono">${formatIDR(sum.belanja)}</td>
+          <td class="py-2.5 px-4 text-right text-slate-900 font-bold bg-amber-50/10 font-mono">${formatIDR(currentRunningBalance)}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -1763,9 +2058,9 @@
       endTr.className = "bg-gray-100 font-extrabold text-sm border-t border-gray-300";
       endTr.innerHTML = `
         <td class="py-3 px-4 uppercase text-slate-900">JUMLAH REKAPITULASI</td>
-        <td class="py-3 px-4 text-right text-[#00a65a]">${formatIDR(totalInYear)}</td>
-        <td class="py-3 px-4 text-right text-[#00c0ef]">${formatIDR(totalOutYear)}</td>
-        <td class="py-3 px-4 text-right text-slate-950">${formatIDR(currentRunningBalance)}</td>
+        <td class="py-3 px-4 text-right text-[#00a65a] font-mono">${formatIDR(totalInYear)}</td>
+        <td class="py-3 px-4 text-right text-[#00c0ef] font-mono">${formatIDR(totalOutYear)}</td>
+        <td class="py-3 px-4 text-right text-slate-950 font-mono">${formatIDR(currentRunningBalance)}</td>
       `;
       tbody.appendChild(endTr);
     }
@@ -1806,10 +2101,10 @@
         if (cells.length >= 4) {
           clonedMarkup += `
             <tr class="border border-slate-700">
-              <td class="py-2 px-3 border border-slate-700 text-left font-semibold">${cells[0].innerText}</td>
-              <td class="py-2 px-3 border border-slate-700 text-right text-emerald-700">${cells[1].innerText}</td>
-              <td class="py-2 px-3 border border-slate-700 text-right text-sky-700">${cells[2].innerText}</td>
-              <td class="py-2 px-3 border border-slate-700 text-right font-bold text-black">${cells[3].innerText}</td>
+              <td class="py-2 px-3 border border-slate-700 text-left font-semibold font-mono">${cells[0].innerText}</td>
+              <td class="py-2 px-3 border border-slate-700 text-right text-emerald-700 font-mono">${cells[1].innerText}</td>
+              <td class="py-2 px-3 border border-slate-700 text-right text-sky-700 font-mono">${cells[2].innerText}</td>
+              <td class="py-2 px-3 border border-slate-700 text-right font-bold text-black font-mono">${cells[3].innerText}</td>
             </tr>
           `;
         }
@@ -1831,7 +2126,6 @@
 
     window.onload = function() {
       try {
-        // Daftarkan global error listener seawal mungkin
         window.onerror = function(message, source, lineno, colno, error) {
           const errorDiv = document.getElementById("safe-error-fallback");
           const mainCard = document.getElementById("main-ledger-card");
@@ -1854,6 +2148,7 @@
         };
 
         updateHeaderWidgets();
+        updateStorageIndicator();
 
         const cachedLogo = SafeStorage.getLocal("mmu_b44_cached_logo");
         if (cachedLogo) {
@@ -1865,7 +2160,6 @@
           bypassLogin();
         }
 
-        // Reusable Custom Confirm Event Listeners
         const cancelBtn = document.getElementById("confirm-cancel-btn");
         if (cancelBtn) cancelBtn.onclick = closeConfirm;
         
@@ -1890,5 +2184,3 @@
   </script>
 </body>
 </html>
-```
-`
